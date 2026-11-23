@@ -4,6 +4,15 @@ import pytest
 from django.core.exceptions import ImproperlyConfigured
 
 
+@pytest.fixture(autouse=True)
+def database_environment(monkeypatch):
+    monkeypatch.setenv("POSTGRES_DB", "support_example")
+    monkeypatch.setenv("POSTGRES_USER", "support_user")
+    monkeypatch.setenv("POSTGRES_PASSWORD", "example-password")
+    monkeypatch.setenv("DB_HOST", "127.0.0.1")
+    monkeypatch.setenv("DB_PORT", "5432")
+
+
 @pytest.mark.parametrize(
     ("environment", "secret", "debug"),
     [

@@ -3,3 +3,4 @@
 from .base_settings import *  # noqa: F403
 
 SECRET_KEY = "test-only-signing-key"
+DATABASES = {"default": {"ENGINE": "django.db.backends.dummy"}}

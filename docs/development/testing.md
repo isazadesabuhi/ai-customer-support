@@ -5,8 +5,13 @@ Small automated checks catch configuration and rendering regressions before a de
 | Scope | Command | Coverage |
 | --- | --- | --- |
 | Frontend | `npm run test:run` | Vitest renders the landing page with React Testing Library and jsdom and verifies its level-one heading. |
-| Backend | `python -m pytest` | pytest-django loads the project, verifies DRF registration and Django checks, and confirms an HTTP 404 at the empty root route. |
+| Backend database-free | `python -m pytest -m "not postgres"` | Validates environment parsing and the settings module, checks signing keys, tests the connectivity command with a mocked cursor, and runs existing Django smoke tests. |
+| PostgreSQL integration | `python -m pytest -m postgres --ds=config.postgres_test_settings` | Verifies a real PostgreSQL query, the test database name, and the non-superuser role. |
 
-Run each command from its app directory. Use `npm.cmd` in Windows PowerShell and the activated Python virtual environment for backend checks. Use `npm run test` for interactive frontend watch mode. Neither suite needs a running development server or external credentials.
+Run each command from its app directory. Use `npm.cmd` and `.\.venv\Scripts\python.exe` in Windows PowerShell. Use `npm run test` for interactive frontend watch mode.
 
-Future tests should mock external API requests at the service boundary and exercise both successful and failed responses. Use integration tests to verify persistence and API contracts as those layers arrive. Add Playwright for end-to-end flows once the frontend and API communicate.
+The frontend and database-free suites run without services or database credentials. Plain `python -m pytest` uses a dummy database backend and skips the marked PostgreSQL test. Run `ruff check .` and `ruff format --check .` alongside the backend tests.
+
+The integration command requires a healthy local Compose database and the variables from the [setup guide](setup.md#windows-powershell). The dedicated settings require IPv4 loopback and reserve `test_ai_customer_support`. Django uses the server's `postgres` maintenance database to create the test database, applies framework migrations to the test database, and drops the test database after a normal run. The local non-superuser role has `CREATEDB` for this lifecycle. Development tables remain outside the test database, which keeps tests repeatable and protects working data.
+
+Future tests should mock external API requests at the service boundary and exercise both successful and failed responses. Add Playwright for end-to-end flows once the frontend and API communicate.

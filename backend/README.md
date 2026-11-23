@@ -1,5 +1,5 @@
 # Backend
 
-The Django project lives in `config/` and uses temporary local SQLite settings. Django REST Framework is installed. The URL configuration is empty, so an HTTP request to `/` returns 404.
+The Django project lives in `config/` and connects to local PostgreSQL through Psycopg. Django REST Framework is installed. The URL configuration is empty, so an HTTP request to `/` returns 404.
 
-Use Python 3.12–3.14. Set up a virtual environment and install `requirements/dev.txt` with pip. The [setup guide](../docs/development/setup.md) covers environment variables, server startup, and quality checks.
+Use Python 3.12–3.14. The [setup guide](../docs/development/setup.md) covers the virtual environment, Docker Compose, database credentials, framework migrations, and server startup. The [testing guide](../docs/development/testing.md) documents the database-free tests and opt-in PostgreSQL integration test.

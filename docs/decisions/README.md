@@ -36,3 +36,12 @@ Use these fields for future records.
 - **Alternatives Considered** pnpm for the frontend and a Python locking tool such as uv or pip-tools.
 - **Consequences** A small toolchain is easy to learn. Updating Python dependencies requires reviewing transitive pins and checking the resolved environment.
 - **Date** 2026-11-23
+
+## ADR-004 · Run local PostgreSQL with Docker Compose
+
+- **Status** Accepted
+- **Context** Django needs a relational database for future support data and a reproducible environment on Windows and Unix-like systems.
+- **Decision** Pin the official PostgreSQL 17.12 image and use synchronous Psycopg 3 binary wheels. Compose manages the database and persistent volume. Django and Next.js run on the host. The app connects through a loopback port as a separate non-superuser role. Opt-in PostgreSQL tests use a reserved test database and Django's test database lifecycle.
+- **Alternatives Considered** A manually installed PostgreSQL service, an all-container application stack, and retaining SQLite for development.
+- **Consequences** A pinned image and named volume make startup and restart predictable. The host workflow keeps the existing virtual environment and frontend tooling. Database integration requires a Docker engine, and the local application role needs `CREATEDB` for pytest-django. Database-free tests remain available without the service.
+- **Date** 2026-11-23

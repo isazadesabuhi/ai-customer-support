@@ -1,8 +1,10 @@
 # Runtime packages
 Django==5.2.19
 djangorestframework==3.18.3
+psycopg[binary]==3.3.6
 
 # Resolved runtime dependencies
 asgiref==3.12.1
 sqlparse==0.6.1
+typing-extensions==4.16.0; python_version < "3.13"
 tzdata==2026.6; sys_platform == "win32"

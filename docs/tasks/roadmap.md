@@ -9,7 +9,7 @@ Allowed statuses are Not Started, In Progress, Completed, Partially Completed, a
 | Task | Description | Status |
 | --- | --- | --- |
 | TASK-001 | Initialize monorepo, toolchain, and documentation. | Partially Completed |
-| TASK-002 | Configure Django and PostgreSQL. | Not Started |
+| TASK-002 | Configure Django and PostgreSQL. | Partially Completed |
 | TASK-003 | Design customer support data models. | Not Started |
 | TASK-004 | Implement conversation REST APIs. | Not Started |
 | TASK-005 | Implement authentication and authorization. | Not Started |

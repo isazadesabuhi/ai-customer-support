@@ -6,6 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.management.utils import get_random_secret_key
 
 from .base_settings import *  # noqa: F403
+from .database import postgres_database
 
 debug_value = os.getenv("DJANGO_DEBUG", "false").strip().lower()
 if debug_value not in {"true", "false"}:
@@ -22,3 +23,5 @@ if not SECRET_KEY.strip():
 
 allowed_hosts = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]")
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(",") if host.strip()]
+
+DATABASES = {"default": postgres_database()}

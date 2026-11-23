@@ -11,7 +11,23 @@
 | Port 3000 or 8000 is busy | Start Next.js with `npm run dev -- --hostname 127.0.0.1 --port 3001` or Django with `python manage.py runserver 127.0.0.1:8001`. |
 | Django ignores environment values | Set process variables in the terminal that starts Django, then restart it. Use `true` or `false` for `DJANGO_DEBUG` and separate allowed hostnames with commas. |
 | Django requests a non-empty `DJANGO_SECRET_KEY` | For local commands, set `$env:DJANGO_ENV = 'development'` in PowerShell or `export DJANGO_ENV=development` in a POSIX shell. In other environments, supply a private, non-empty `DJANGO_SECRET_KEY` through the process environment. |
-| Django root returns 404 or reports pending migrations | Both are expected at this foundation stage. See [API status](../api/endpoints.md) and [setup](setup.md). |
+| Django root returns 404 | The URL configuration is empty. See the [API status](../api/endpoints.md). |
+
+## PostgreSQL and Docker Compose
+
+Run Compose commands from the repository root and Django commands from `backend/`.
+
+| Symptom | Action |
+| --- | --- |
+| Docker Engine is unreachable | Start Docker Desktop in Linux container mode on Windows, or start Docker Engine on Linux. Run `docker version` and look for its Server section. |
+| Port 5432 is occupied | Set `DB_PORT=55432` in the ignored root `.env`, reload the Django variables, and run `docker compose up -d --wait db`. PostgreSQL still listens on port 5432 inside the container. |
+| The container is unhealthy | Check `docker compose ps` and `docker compose logs --tail 100 db` locally. Inspect initialization errors and allow time for readiness. |
+| Required variables are missing | Copy the root `.env.example` once, fill both passwords, and load the Django variables in the same shell that starts Django. Use `docker compose config --quiet` to check Compose interpolation. |
+| Connection refused or timed out | Check service readiness and the host port with `docker compose ps`. Match Django's `DB_HOST` and `DB_PORT` to the published address. |
+| Authentication fails | Verify the database name, app role, and password against the existing database, then retry `python manage.py check_database`. The health check only verifies server readiness. |
+| Test database permission is denied | Use the Compose-provisioned role with `CREATEDB` and opt in with `--ds=config.postgres_test_settings`. Verify the loopback target and keep the reserved name for tests. |
+| Migration fails or appears pending | Confirm connectivity, inspect `python manage.py showmigrations` and `python manage.py migrate --plan`, then correct the reported error and rerun `migrate`. |
+| Changing passwords in `.env` has no effect | The image runs initialization only on an empty data directory. For an existing local volume, restore the matching values or use a PostgreSQL admin session and psql's `\password` prompt to rotate the app role's password, then update `.env` and reload the shell. Preserve the volume during troubleshooting. |
 
 ## Windows npm install recovery
 

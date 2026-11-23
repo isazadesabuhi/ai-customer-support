@@ -4,23 +4,24 @@ This project is a production-oriented portfolio application for learning practic
 
 ## Current status
 
-The frontend defines a foundation landing page. The backend loads Django and Django REST Framework with local SQLite settings and an empty URL configuration. See the [progress tracker](docs/tasks/progress.md) for verified checks.
+The frontend defines a foundation landing page. The backend loads Django and Django REST Framework with PostgreSQL settings and an empty URL configuration. Docker Compose defines the local database service. See the [progress tracker](docs/tasks/progress.md) for database verification results.
 
 | Area | In the repository | Planned |
 | --- | --- | --- |
 | Frontend | Next.js App Router, React, TypeScript, Tailwind CSS, ESLint, Prettier, Vitest, React Testing Library | Agent inbox, draft review, Playwright |
-| Backend | Python, Django, Django REST Framework, Ruff, Pytest, pytest-django configuration | PostgreSQL, support APIs, authentication |
+| Backend | Python, Django, Django REST Framework, PostgreSQL configuration, Ruff, Pytest, pytest-django | Support APIs, authentication |
 | AI | Workflow documentation | OpenAI Python SDK, Pydantic validation, evaluations |
 
 ## Repository
 
 - `frontend/` contains the Next.js app and component tests.
 - `backend/` contains the Django project configuration, Python requirements, and framework smoke tests.
+- `compose.yaml` and `docker/postgres/` define the local database service and app role.
 - `docs/` contains architecture, development, API, AI, and project records.
 
 ## Getting started
 
-Follow the [local setup guide](docs/development/setup.md) to install dependencies, start both servers, and run the checks.
+Follow the [local setup guide](docs/development/setup.md) to install dependencies, start PostgreSQL and both applications, and run the checks.
 
 ## Roadmap and documentation
 

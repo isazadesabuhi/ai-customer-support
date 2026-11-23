@@ -1,0 +1,13 @@
+-r base.txt
+
+# Development and test tools
+pytest==9.1.1
+pytest-django==4.14.0
+ruff==0.16.7
+
+# Resolved development dependencies
+colorama==0.4.6; sys_platform == "win32"
+iniconfig==2.3.0
+packaging==26.3
+pluggy==1.6.0
+Pygments==2.21.0

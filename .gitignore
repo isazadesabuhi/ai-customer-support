@@ -1,0 +1,43 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+db.sqlite3
+db.sqlite3-*
+
+# JavaScript
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.turbo/
+.vite/
+.vitest/
+*.tsbuildinfo
+next-env.d.ts
+
+# Workspace and runtime artifacts
+.task-cache/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*~

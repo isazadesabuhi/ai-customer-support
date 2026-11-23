@@ -13,33 +13,50 @@
 | Completed | None |
 | In progress | None |
 | Partially completed | TASK-001 |
-| Blocked | Frontend verification for TASK-001 |
+| Blocked | Node.js 24 verification and a fresh registry audit for TASK-001 |
 
 ## Last verified results
 
-Verified on 2026-11-23 using Windows, Python 3.12.10, Node.js 25.2.1, and npm 11.6.4. The project targets Node.js 24 LTS.
+Reverified on 2026-11-23 using Windows, the existing Python 3.12.10 virtual environment, Node.js 25.2.1, and npm 11.6.4. Frontend checks ran on Node.js 25.2.1. The required Node.js 24 LTS runtime was unavailable in this session.
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Frontend lint | `npm.cmd run lint` | Blocked at startup because ESLint was unavailable after the failed install. |
-| Frontend types | `npm.cmd run typecheck` | Blocked at startup because Next.js was unavailable. |
-| Frontend formatting | `npm.cmd run format:check` | Passed with the pinned Prettier 3.8.1 archive from the local npm cache. |
-| Frontend smoke test | `npm.cmd run test:run` | Blocked at startup in the project environment. A separate cached test environment ran the same component, test, and Vitest configuration with React 19.3.0. The test passed. |
-| Frontend build | `npm.cmd run build` | Blocked at startup because Next.js was unavailable. |
-| Frontend server | `npm.cmd run dev -- --hostname 127.0.0.1` | Blocked at startup because Next.js was unavailable. |
-| Django system check | `.venv/Scripts/python.exe manage.py check` | Passed. |
+| Frontend install | `npm ci` | Successful in the developer's local run, with 456 packages installed. Used that installation for the checks below. |
+| Frontend lint | `npm.cmd run lint` | Passed with zero warnings after naming the PostCSS configuration export. |
+| Frontend types | `npm.cmd run typecheck` | Passed. |
+| Frontend formatting | `npm.cmd run format:check` | Passed. |
+| Frontend smoke test | `npm.cmd run test:run` | 1 passed. |
+| Frontend production build | `npm.cmd run build` | Passed. The Turbopack root warning was absent. |
+| Frontend development server | `node frontend/node_modules/next/dist/bin/next dev frontend --hostname 127.0.0.1 --port 3010` | Started from the repository root and returned HTTP 200 at `/` with the expected H1. The Turbopack root warning was absent. |
+| Django system check | `.venv/Scripts/python.exe manage.py check` | Passed in local development without a supplied key. |
 | Ruff lint | `.venv/Scripts/ruff.exe check .` | Passed. |
-| Ruff formatting | `.venv/Scripts/ruff.exe format --check .` | Passed. |
-| Backend smoke tests | `.venv/Scripts/python.exe -m pytest` | All 3 passed. |
-| Clean backend install | `python -m venv`, `pip install --no-index --find-links <wheelhouse> -r backend/requirements/dev.txt`, `pip check` | Passed in a fresh virtual environment using the offline wheel set. |
-| Django server | `.venv/Scripts/python.exe -u manage.py runserver 127.0.0.1:8000 --noreload` | Started and returned the expected HTTP 404 at `/`. |
+| Ruff formatting | `.venv/Scripts/ruff.exe format --check .` | Passed for 11 files. |
+| Backend tests | `.venv/Scripts/python.exe -m pytest` | All 11 passed, including 8 signing-key cases. |
 
-Command paths in the table are relative to each app directory. Git status, ignore rules, environment examples, the ordered 40-task registry, and local documentation links were checked. The npm lockfile records registry archive URLs and integrity pins.
+App commands run from their respective directories except for the development-server command shown from the repository root. The frontend lockfile retained the same SHA-256 hash.
+
+## Frontend dependency audit
+
+`npm audit --json` could not reach npm's advisory endpoint in this session (`EACCES`). The saved successful registry response from this project's local `npm audit`, npm's advisory cache, and `npm ls` identify one underlying advisory across seven moderate development-dependency entries. [GHSA-g3hv-75wg-m249 / CVE-2026-118764](https://github.com/advisories/GHSA-g3hv-75wg-m249)
+
+All paths start at `eslint-config-next@16.4.6`. The TypeScript ESLint packages are locked at `8.64.0`. The paths below show where each reported package reaches the affected copy of minimatch.
+
+| Reported package | Dependency path after `eslint-config-next` |
+| --- | --- |
+| `minimatch@10.2.6` | `typescript-eslint → typescript-estree → minimatch` |
+| `@typescript-eslint/typescript-estree` | `typescript-eslint → typescript-estree → minimatch` |
+| `@typescript-eslint/parser` | `typescript-eslint → parser → typescript-estree → minimatch` |
+| `@typescript-eslint/utils` | `typescript-eslint → utils → typescript-estree → minimatch` |
+| `@typescript-eslint/type-utils` | `typescript-eslint → eslint-plugin → type-utils → typescript-estree → minimatch` |
+| `@typescript-eslint/eslint-plugin` | `typescript-eslint → eslint-plugin → type-utils → typescript-estree → minimatch` |
+| `typescript-eslint` | `typescript-eslint → typescript-estree → minimatch` |
+
+Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adopts `minimatch@^11.0.1` and fits the Next.js lint config's existing `^8.56.0` range. Updating the TypeScript ESLint packages together is a same-major remediation. Forcing minimatch 11 into the old parser's `^10.2.2` range would cross a major-version boundary outside its declared compatibility. The candidate release was checked against package metadata. Its installation and audit still need verification. [TypeScript ESLint 8.73.0 parser dependency](https://github.com/typescript-eslint/typescript-eslint/blob/v8.73.0/packages/typescript-estree/package.json)
 
 ## Known issues
 
-- npm registry requests failed with `EACCES`. The local cache lacked some pinned package archives, including Next.js 16.4.6 and React 19.3.1. A clean install and the blocked frontend checks still need verification with Node.js 24 LTS and registry access.
-- The PyPI install could not fetch pytest-django. Backend validation used a locally built pytest-django 4.14.0 wheel from the published source and cached wheels for the remaining pins. [Published source revision](https://github.com/pytest-dev/pytest-django/tree/1a6b6121c7f1f20e2a32c5f1ece7b6671160b968)
+- Repeat the frontend install and verification on Node.js 24 LTS and run a fresh registry audit. See the [Windows recovery steps](../development/troubleshooting.md#windows-npm-install-recovery).
+- ESLint 9.39.5 is end of life. ESLint 10 is supported by ESLint upstream, but the installed import, React, and JSX accessibility plugins declare peers only through ESLint 9. Move to ESLint 10 with a Next.js lint configuration whose plugin peers support it, then verify a clean install and lint on Node.js 24. [ESLint version support](https://eslint.org/version-support/) · [ESLint 10 migration guide](https://eslint.org/docs/latest/use/migrate-to-10.0.0)
 
 ## Next planned task
 

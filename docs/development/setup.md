@@ -33,18 +33,23 @@ Set-Location backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements/dev.txt
+$env:DJANGO_ENV = 'development'
 python manage.py runserver 127.0.0.1:8000
 ```
 
 If activation is restricted, use `.\.venv\Scripts\python.exe` in place of `python`. The [troubleshooting guide](troubleshooting.md) lists direct paths for the other tools.
 
-In a separate terminal from the repository root, start Next.js.
+Open a separate PowerShell terminal with Node.js 24 LTS and npm 11 on `PATH`. From the repository root, install the frontend and start Next.js.
 
 ```powershell
 Set-Location frontend
+node --version
+npm.cmd --version
 npm.cmd ci
 npm.cmd run dev -- --hostname 127.0.0.1
 ```
+
+If `npm.cmd ci` reports a registry or cache error, use the [Windows npm recovery steps](troubleshooting.md#windows-npm-install-recovery).
 
 ## macOS and Linux
 
@@ -55,6 +60,7 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements/dev.txt
+export DJANGO_ENV=development
 python manage.py runserver 127.0.0.1:8000
 ```
 
@@ -70,20 +76,23 @@ Open `http://127.0.0.1:3000/` for the foundation page. Django listens at `http:/
 
 ## Local configuration
 
-Start with the defaults for this task. Set Django overrides in the shell that starts Django.
+Set Django configuration in the shell that starts Django. Opt in to local development with `DJANGO_ENV=development` to use a generated signing key.
 
 | Variable | Default | Use |
 | --- | --- | --- |
+| `DJANGO_ENV` | Unset | The value `development` enables the local signing-key fallback. |
 | `DJANGO_DEBUG` | `false` | Set to `true` for detailed local errors when running on loopback. |
-| `DJANGO_SECRET_KEY` | Generated per process | Supply a private local value if you need a stable signing key across restarts. |
+| `DJANGO_SECRET_KEY` | Required outside local development | Supply a private, non-empty signing key. In local development, a missing or blank value generates a per-process key. |
 | `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1,[::1]` | Comma-separated hostnames or IPs without ports. |
 
 The [backend environment example](../../backend/.env.example) lists the supported keys. Supply values through the process environment, such as `$env:DJANGO_DEBUG = 'true'` in PowerShell or `export DJANGO_DEBUG=true` in a POSIX shell. The foundation page runs with defaults. Next.js can read local `.env.local` files when frontend configuration is added. Use `NEXT_PUBLIC_` only for values intended to be visible in the browser.
+
+Pytest loads dedicated test settings with a test-only signing key. Run it from `backend/` without setting a runtime key.
 
 ## Verify the setup
 
 In `frontend/`, run `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run test:run`, and `npm run build`. Use `npm.cmd` in Windows PowerShell. Use `npm run format` when you intend to rewrite files.
 
-In `backend/` with the virtual environment active, run `python manage.py check`, `ruff check .`, `ruff format --check .`, and `python -m pytest`. Use `ruff check --fix .` to apply safe lint fixes and sort imports and `ruff format .` to apply formatting.
+In `backend/` with the virtual environment active, run `python manage.py check` in the local development shell configured above, or supply an explicit `DJANGO_SECRET_KEY`. Run `ruff check .`, `ruff format --check .`, and `python -m pytest`. Use `ruff check --fix .` to apply safe lint fixes and sort imports and `ruff format .` to apply formatting.
 
 Use `npm ci` for a clean frontend install and a fresh virtual environment for a clean backend install. When updating dependencies, keep direct and transitive pins in sync, run `python -m pip check`, and verify the checks again.

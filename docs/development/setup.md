@@ -20,7 +20,7 @@ Check `node --version`, `npm --version` (`npm.cmd --version` in PowerShell), and
 | --- | --- |
 | Frontend | Next.js 16.4.6, React 19.3.1, Tailwind CSS 4.3.3, TypeScript 5.9.3 |
 | Frontend checks | ESLint 9.39.5, Prettier 3.8.1, Vitest 4.1.12, Vite 8.3.8, React Testing Library 16.3.2, jsdom 29.1.1 |
-| Backend | Django 5.2.19, Django REST Framework 3.18.3, Psycopg 3.3.6 with binary wheels |
+| Backend | Django 5.2.19, Django REST Framework 3.18.3, django-cors-headers 4.9.0, Psycopg 3.3.6 with binary wheels |
 | Database | PostgreSQL 17.12 official Docker image |
 | Backend checks | Ruff 0.16.7, Pytest 9.1.1, pytest-django 4.14.0 |
 
@@ -60,6 +60,7 @@ $env:DJANGO_ENV = 'development'
 .\.venv\Scripts\python.exe manage.py check_database
 .\.venv\Scripts\python.exe manage.py migrate
 .\.venv\Scripts\python.exe manage.py showmigrations
+.\.venv\Scripts\python.exe manage.py provision_support_roles
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
 ```
 
@@ -97,6 +98,7 @@ python manage.py check
 python manage.py check_database
 python manage.py migrate
 python manage.py showmigrations
+python manage.py provision_support_roles
 python manage.py runserver 127.0.0.1:8000
 ```
 
@@ -108,36 +110,59 @@ npm ci
 npm run dev -- --hostname 127.0.0.1
 ```
 
-Open `http://127.0.0.1:3000/` for the foundation page. Django listens at `http://127.0.0.1:8000/` and serves the staff-only API under `/api/`. Its root path returns 404.
+Open `http://localhost:3000/` for the foundation page. Access the Django API at `http://localhost:8000/api/`. Both servers bind to loopback. Use `localhost` consistently in client URLs so browser origins and cookie hosts line up. Django's root path returns 404.
 
 ## Inspect the API locally
 
-Use the development database with migrations applied. In a `backend/` terminal with the Django environment loaded, open the management shell. Use `python manage.py shell` with the virtual environment active on macOS or Linux.
+Use the development database with migrations applied and start the backend using the commands above. In a second `backend/` terminal with the same Django environment loaded, provision the groups and open the management shell. Use `python` with the virtual environment active on macOS or Linux.
 
 ```powershell
+.\.venv\Scripts\python.exe manage.py provision_support_roles
 .\.venv\Scripts\python.exe manage.py shell
 ```
 
-At the Python prompt, create a local-only staff account with a unique username and private password. This creates an ordinary user with the staff flag.
+At the Python prompt, create a local-only account with a unique username and private development password. Use `Support Manager` in the group lookup when you need to inspect that role.
 
 ```python
 from getpass import getpass
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
-get_user_model().objects.create_user(
-    username=input("Local staff username: "),
-    password=getpass("Local staff password: "),
-    is_staff=True,
+user = get_user_model().objects.create_user(
+    username=input("Local support username: "),
+    password=getpass("Local support password: "),
 )
+user.groups.add(Group.objects.get(name="Support Agent"))
 ```
 
-With Django running on loopback, run the following command with the username you chose. `curl` prompts for the password without including it in the command. Use `curl` on macOS or Linux. Keep this Basic Authentication workflow local and use a disposable development password.
+With Django running, use PowerShell to bootstrap CSRF, sign in, inspect the session, and sign out. The session object holds both cookies. The password prompt masks input. Run these examples against loopback with your private development account.
 
 ```powershell
-curl.exe --user local-staff http://127.0.0.1:8000/api/conversations/
+$api = 'http://localhost:8000/api'
+$csrf = (Invoke-RestMethod "$api/auth/csrf/" -SessionVariable apiSession).csrfToken
+$username = Read-Host 'Local support username'
+$password = Read-Host 'Local support password' -AsSecureString
+try {
+    $profile = Invoke-RestMethod "$api/auth/login/" -WebSession $apiSession `
+        -Method Post -ContentType 'application/json; charset=utf-8' `
+        -Headers @{ 'X-CSRFToken' = $csrf } `
+        -Body (@{
+            username = $username
+            password = [System.Net.NetworkCredential]::new('', $password).Password
+        } | ConvertTo-Json -Compress)
+} finally {
+    $password.Dispose()
+    Remove-Variable password
+}
+
+Invoke-RestMethod "$api/auth/me/" -WebSession $apiSession
+Invoke-RestMethod "$api/conversations/" -WebSession $apiSession
+$csrf = (Invoke-RestMethod "$api/auth/csrf/" -WebSession $apiSession).csrfToken
+Invoke-RestMethod "$api/auth/logout/" -WebSession $apiSession `
+    -Method Post -Headers @{ 'X-CSRFToken' = $csrf }
 ```
 
-An empty database returns a paginated list with zero conversations. Sending the same request without credentials returns 403. Conversation creation requires a customer UUID already in the database. See the [API reference](../api/endpoints.md) for JSON examples and response codes.
+Login rotates the CSRF cookie, so fetch a fresh token before logout or other writes. The final request returns 204. Requests to `/api/auth/me/` with the logged-out session return 403. Conversation creation requires a customer UUID already in the database. See the [API reference](../api/endpoints.md) for JSON examples and response codes.
 
 ## Stop and restart PostgreSQL
 
@@ -159,6 +184,7 @@ Set Django configuration in the shell that starts Django. Opt in to local develo
 | `DJANGO_DEBUG` | `false` | Set to `true` for detailed local errors when running on loopback. |
 | `DJANGO_SECRET_KEY` | Required outside local development | Supply a private, non-empty signing key. In local development, a missing or blank value generates a per-process key. |
 | `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1,[::1]` | Comma-separated hostnames or IPs without ports. |
+| `DJANGO_FRONTEND_ORIGINS` | `http://localhost:3000` in development, empty otherwise | Comma-separated exact origins for credentialed API CORS and trusted CSRF origins. Use HTTPS outside local development. An explicit empty value disables cross-origin access. |
 
 The [root environment example](../../.env.example) lists database variables. The [backend environment example](../../backend/.env.example) covers Django-specific settings. Django reads the process environment. The frontend foundation page runs with defaults. Use `NEXT_PUBLIC_` only for values intended to be visible in the browser.
 

@@ -1,13 +1,25 @@
-from rest_framework.permissions import IsAuthenticated
+from accounts.permissions import HasSupportRole
 
 
-class IsSupportStaff(IsAuthenticated):
-    """Interim authorization for this single-company application."""
+class HasSupportPermissions(HasSupportRole):
+    message = "Support permission is required for this operation."
 
-    message = "Support staff access is required."
+    @staticmethod
+    def has_required_permissions(request, view):
+        method = "GET" if request.method in {"HEAD", "OPTIONS"} else request.method
+        permissions = view.support_permissions.get(method)
+        if permissions is None:
+            # DRF handles unsupported methods as 405. Deny any new HTTP handler
+            # until its permissions are explicitly mapped.
+            return not hasattr(view, method.lower())
+        return request.user.has_perms(permissions)
 
     def has_permission(self, request, view):
-        return super().has_permission(request, view) and request.user.is_staff
+        return super().has_permission(request, view) and self.has_required_permissions(
+            request, view
+        )
 
     def has_object_permission(self, request, view, obj):
-        return self.has_permission(request, view)
+        return request.support_role is not None and self.has_required_permissions(
+            request, view
+        )

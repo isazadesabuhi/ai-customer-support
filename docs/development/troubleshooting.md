@@ -11,7 +11,21 @@
 | Port 3000 or 8000 is busy | Start Next.js with `npm run dev -- --hostname 127.0.0.1 --port 3001` or Django with `python manage.py runserver 127.0.0.1:8001`. |
 | Django ignores environment values | Set process variables in the terminal that starts Django, then restart it. Use `true` or `false` for `DJANGO_DEBUG` and separate allowed hostnames with commas. |
 | Django requests a non-empty `DJANGO_SECRET_KEY` | For local commands, set `$env:DJANGO_ENV = 'development'` in PowerShell or `export DJANGO_ENV=development` in a POSIX shell. In other environments, supply a private, non-empty `DJANGO_SECRET_KEY` through the process environment. |
-| Django root returns 404 | The URL configuration is empty. See the [API status](../api/endpoints.md). |
+| Django root returns 404 | Django serves its API under `/api/`. See the [API reference](../api/endpoints.md). |
+
+## API authentication and browser requests
+
+| Symptom | What to check |
+| --- | --- |
+| Login returns `400` | Check the username and password, confirm the account is active, and verify membership in `Support Agent` or `Support Manager`. The same error covers an unknown username, bad password, or ineligible account. |
+| Login or a write returns `403` mentioning CSRF | GET `/api/auth/csrf/` with the same client and cookie jar. Send its `csrfToken` as `X-CSRFToken`. Get a new token after login because Django rotates the cookie secret. |
+| A read returns `403` after login | Inspect `/api/auth/me/` using the same session. If the profile works, compare its grants with the operation in the API reference. A staff flag alone gives zero support grants. |
+| Session cookie is missing from a browser request | Use `credentials: "include"` for a credentialed cross-origin request. Verify the response set a cookie and that the browser can send it under the configured Secure and SameSite policies. Local HTTP requires `DJANGO_ENV=development`. |
+| CORS preflight or browser response access fails | Check the frontend's exact scheme, hostname, and port against `DJANGO_FRONTEND_ORIGINS`, then restart Django after any environment change. Use a comma-separated list of origins without paths. |
+| Cookies and CSRF work in PowerShell but fail in the browser | Use `localhost` in both browser URLs. `127.0.0.1` changes the cookie host and site. The default policy expects `http://localhost:3000` and `http://localhost:8000`. |
+| A previously working session returns `403` | Sign in again after session expiry or logout. Account deactivation, password changes, and role removal can also revoke access. A backend restart can invalidate sessions when development uses a generated signing key. |
+
+See the [local session walkthrough](setup.md#inspect-the-api-locally) and the [API reference](../api/endpoints.md).
 
 ## PostgreSQL and Docker Compose
 

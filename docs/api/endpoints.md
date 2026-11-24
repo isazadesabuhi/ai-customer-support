@@ -1,8 +1,64 @@
 # API endpoints
 
-All five routes require an authenticated Django staff account (`is_staff=True`). With the current DRF authentication order, Session Authentication followed by Basic Authentication, both anonymous and non-staff requests receive HTTP 403. Session-authenticated POST requests also require a CSRF token. Use Basic Authentication for local inspection over the loopback interface. See the [local API setup](../development/setup.md#inspect-the-api-locally).
+The API uses Django session cookies. Authenticated writes require the CSRF cookie and `X-CSRFToken` header. Responses include private and no-store cache directives. See the [local API setup](../development/setup.md#inspect-the-api-locally) and [authentication architecture](../architecture/authentication.md).
 
-This interim policy gives staff access to the single company's support records. Detail and message routes check permissions on the conversation. Permission checks precede UUID resolution, so a denied caller cannot determine whether a conversation exists. Successful and error responses include `Cache-Control: ... private, no-store` directives. TASK-005 will introduce formal authentication and authorization.
+## Obtain a CSRF token
+
+`GET /api/auth/csrf/` is public and takes no request body or CSRF header. It returns `200`, sets or refreshes the HttpOnly `csrftoken` cookie, and leaves the authentication session alone. The JSON response is `{"csrfToken":"<Django-generated masked token>"}`. Retain the cookie and send this token as `X-CSRFToken` on POST requests.
+
+## Log in
+
+`POST /api/auth/login/` is public and requires a valid CSRF cookie and matching `X-CSRFToken` header. The JSON body must contain exactly `username` and `password` strings. Example values below are illustrative.
+
+```json
+{"username":"support_agent","password":"example-only"}
+```
+
+An eligible account receives `200`, a `sessionid` cookie, a rotated CSRF cookie, and the following user summary. Fetch `/api/auth/csrf/` again before the next write.
+
+```json
+{"id":12,"username":"support_agent","role":"support_agent","is_authenticated":true}
+```
+
+- `400` for invalid input or rejected credentials. Incorrect credentials, inactive accounts, and accounts lacking a support role all receive `{"detail":"Invalid credentials or insufficient account access."}` for well-formed credential submissions.
+- `403` for missing or invalid CSRF proof.
+- `429` with `Retry-After` in seconds after ten CSRF-valid login submissions within one 60-second window from the same direct peer.
+
+## Read the current user
+
+`GET /api/auth/me/` takes no body or CSRF header. Send the session cookie. An active Support Agent, Support Manager, or superuser receives `200` with the current role and effective support permission codes. No new authentication cookie is issued. Anonymous, expired, and unassigned sessions receive `403`.
+
+```json
+{
+  "id": 12,
+  "username": "support_agent",
+  "role": "support_agent",
+  "permissions": [
+    "support.view_conversation",
+    "support.add_conversation",
+    "support.view_message",
+    "support.add_message"
+  ]
+}
+```
+
+`role` is one of `support_agent`, `support_manager`, or `superuser`. Manager takes precedence when both support groups are present.
+
+## Log out
+
+`POST /api/auth/logout/` requires any active authenticated session and valid CSRF cookie and header. There is no request body. Success returns `204` with an empty body, deletes the server-side session, and clears `sessionid`. Anonymous sessions and failed CSRF checks receive `403`. An authenticated GET receives `405`.
+
+## Support endpoint authorization
+
+Each support operation requires an active user in a support group or an active superuser, plus the listed permissions. Missing authentication or authorization returns HTTP 403. Detail and message routes check access to the conversation. Authorization precedes UUID resolution. Authorized roles share the single-company dataset.
+
+| Method and path | Permission |
+| --- | --- |
+| `GET /api/conversations/` | `support.view_conversation` |
+| `POST /api/conversations/` | `support.add_conversation` |
+| `GET /api/conversations/{id}/` | `support.view_conversation` |
+| `GET /api/conversations/{id}/messages/` | `support.view_conversation` and `support.view_message` |
+| `POST /api/conversations/{id}/messages/` | `support.view_conversation` and `support.add_message` |
 
 ## Shared conventions
 
@@ -14,7 +70,7 @@ This interim policy gives staff access to the single company's support records. 
 
 ## List conversations
 
-`GET /api/conversations/` returns 200 with a paginated list for staff. `status` is optional and accepts one of `open`, `pending`, `resolved`, or `closed`. Invalid or repeated values receive 400. Ordering is newest first by `created_at`, then descending by `id`. There is no request body.
+`GET /api/conversations/` returns 200 with a paginated list. `status` is optional and accepts one of `open`, `pending`, `resolved`, or `closed`. Invalid or repeated values receive 400. Ordering is newest first by `created_at`, then descending by `id`. There is no request body.
 
 ```http
 GET /api/conversations/?status=open&page=1&page_size=20 HTTP/1.1

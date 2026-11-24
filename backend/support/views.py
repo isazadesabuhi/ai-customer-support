@@ -1,19 +1,23 @@
-import logging
-
-from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 from django.views.decorators.cache import never_cache
 from rest_framework import generics, status
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from rest_framework.views import exception_handler
+
+from accounts.roles import (
+    ADD_CONVERSATION,
+    ADD_MESSAGE,
+    VIEW_CONVERSATION,
+    VIEW_MESSAGE,
+)
+from config.api import api_exception_handler
 
 from .models import Conversation
 from .pagination import SupportPagination
-from .permissions import IsSupportStaff
+from .permissions import HasSupportPermissions
 from .serializers import (
     ConversationCreateSerializer,
     ConversationQuerySerializer,
@@ -22,31 +26,15 @@ from .serializers import (
     MessageSerializer,
 )
 
-logger = logging.getLogger(__name__)
-
-
-def support_exception_handler(exc, context):
-    if isinstance(exc, Http404):
-        exc = NotFound()
-    response = exception_handler(exc, context)
-    if response is not None:
-        return response
-
-    logger.error("Unhandled support API error (%s).", type(exc).__name__)
-    return Response(
-        {"detail": "An unexpected server error occurred."},
-        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    )
-
 
 @method_decorator(never_cache, name="dispatch")
 class SupportAPIView(generics.GenericAPIView):
-    permission_classes = (IsSupportStaff,)
+    permission_classes = (HasSupportPermissions,)
     parser_classes = (JSONParser,)
     renderer_classes = (JSONRenderer,)
 
     def get_exception_handler(self):
-        return support_exception_handler
+        return api_exception_handler
 
 
 class SupportListCreateView(SupportAPIView, generics.ListCreateAPIView):
@@ -64,6 +52,7 @@ class SupportListCreateView(SupportAPIView, generics.ListCreateAPIView):
 
 
 class ConversationListView(SupportListCreateView):
+    support_permissions = {"GET": (VIEW_CONVERSATION,), "POST": (ADD_CONVERSATION,)}
     queryset = Conversation.objects.select_related("customer")
     serializer_class = ConversationSerializer
     create_serializer_class = ConversationCreateSerializer
@@ -78,11 +67,16 @@ class ConversationListView(SupportListCreateView):
 
 
 class ConversationDetailView(SupportAPIView, generics.RetrieveAPIView):
+    support_permissions = {"GET": (VIEW_CONVERSATION,)}
     queryset = Conversation.objects.select_related("customer")
     serializer_class = ConversationSerializer
 
 
 class ConversationMessagesView(SupportListCreateView):
+    support_permissions = {
+        "GET": (VIEW_CONVERSATION, VIEW_MESSAGE),
+        "POST": (VIEW_CONVERSATION, ADD_MESSAGE),
+    }
     serializer_class = MessageSerializer
     create_serializer_class = MessageCreateSerializer
 

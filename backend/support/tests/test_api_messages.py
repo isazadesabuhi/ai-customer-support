@@ -12,8 +12,8 @@ from . import postgres_model_tests
 pytestmark = postgres_model_tests
 
 
-def test_empty_message_list(staff_client, conversation):
-    response = staff_client.get(
+def test_empty_message_list(agent_client, conversation):
+    response = agent_client.get(
         reverse("support:conversation-messages", args=[conversation.pk])
     )
 
@@ -26,7 +26,7 @@ def test_empty_message_list(staff_client, conversation):
     }
 
 
-def test_messages_are_paginated_chronologically_and_scoped(staff_client, conversation):
+def test_messages_are_paginated_chronologically_and_scoped(agent_client, conversation):
     url = reverse("support:conversation-messages", args=[conversation.pk])
     other = Conversation.objects.create(
         customer=conversation.customer, subject="Unrelated"
@@ -56,7 +56,7 @@ def test_messages_are_paginated_chronologically_and_scoped(staff_client, convers
     )
     DraftResponse.objects.create(message_id=UUID(int=1), content="Private draft")
 
-    response = staff_client.get(url, {"page_size": 2})
+    response = agent_client.get(url, {"page_size": 2})
     assert response.status_code == 200
     first = response.json()
     assert first["count"] == 3
@@ -72,18 +72,18 @@ def test_messages_are_paginated_chronologically_and_scoped(staff_client, convers
         "page": ["2"],
         "page_size": ["2"],
     }
-    second = staff_client.get(url, {"page": 2, "page_size": 2}).json()
+    second = agent_client.get(url, {"page": 2, "page_size": 2}).json()
     assert [item["id"] for item in second["results"]] == [str(UUID(int=2))]
     assert second["next"] is None
 
 
 def test_create_adds_agent_message_without_changing_conversation(
-    staff_client, conversation
+    agent_client, conversation
 ):
     Conversation.objects.filter(pk=conversation.pk).update(status="pending")
     url = reverse("support:conversation-messages", args=[conversation.pk])
     content = "  Could you provide your order number?\nThank you.\n"
-    response = staff_client.post(
+    response = agent_client.post(
         url, {"sender": "agent", "content": content}, format="json"
     )
 
@@ -94,13 +94,13 @@ def test_create_adds_agent_message_without_changing_conversation(
     assert created.sender == "agent"
     assert created.content == content
     assert set(data) == {"id", "sender", "content", "created_at"}
-    assert staff_client.get(url).json()["results"] == [data]
+    assert agent_client.get(url).json()["results"] == [data]
     conversation.refresh_from_db()
     assert conversation.status == "pending"
 
 
 def test_message_list_query_count_stays_bounded(
-    staff_client, conversation, django_assert_max_num_queries
+    agent_client, conversation, django_assert_max_num_queries
 ):
     Message.objects.bulk_create(
         [
@@ -109,8 +109,9 @@ def test_message_list_query_count_stays_bounded(
         ]
     )
 
-    with django_assert_max_num_queries(4):
-        response = staff_client.get(
+    # Allow three fixed authorization queries for a fresh ordinary user.
+    with django_assert_max_num_queries(7):
+        response = agent_client.get(
             reverse("support:conversation-messages", args=[conversation.pk])
         )
 

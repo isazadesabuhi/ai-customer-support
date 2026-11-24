@@ -4,3 +4,4 @@ from .base_settings import *  # noqa: F403
 
 SECRET_KEY = "test-only-signing-key"
 DATABASES = {"default": {"ENGINE": "django.db.backends.dummy"}}
+CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]

@@ -4,12 +4,12 @@ This project is a production-oriented portfolio application for learning practic
 
 ## Current status
 
-The frontend defines a foundation landing page. The backend serves a staff-only conversation and message API over PostgreSQL. Docker Compose defines the local database service. See the [API reference](docs/api/endpoints.md), [support data model](docs/architecture/data-model.md), and [progress tracker](docs/tasks/progress.md).
+The frontend defines a foundation landing page. The backend serves a role-protected conversation and message API with Django sessions over PostgreSQL. Docker Compose defines the local database service. See the [API reference](docs/api/endpoints.md), [authentication architecture](docs/architecture/authentication.md), [support data model](docs/architecture/data-model.md), and [progress tracker](docs/tasks/progress.md).
 
 | Area | In the repository | Planned |
 | --- | --- | --- |
 | Frontend | Next.js App Router, React, TypeScript, Tailwind CSS, ESLint, Prettier, Vitest, React Testing Library | Agent inbox, draft review, Playwright |
-| Backend | Python, Django, Django REST Framework, conversation and message APIs, PostgreSQL, Ruff, Pytest, pytest-django | Authentication workflows and formal authorization |
+| Backend | Python, Django, Django REST Framework, session authentication, support roles, conversation and message APIs, PostgreSQL, Ruff, Pytest, pytest-django | Development sample data and AI integration |
 | AI | Workflow documentation | OpenAI Python SDK, Pydantic validation, evaluations |
 
 ## Repository

@@ -61,5 +61,14 @@ Use these fields for future records.
 - **Context** Support staff need a small HTTP surface for conversations and messages before formal authentication and authorization are introduced.
 - **Decision** Use DRF generic list, create, and retrieve views with explicit routes. Nest messages under the parent conversation UUID and check parent permissions. Give read serializers explicit public fields and restrict each create serializer to its documented inputs. Reuse model validation before insertion. Limit the API to authenticated staff using the existing authentication schemes. Paginate both lists with a default of 20 and a maximum of 100 and validate requested pages and sizes.
 - **Alternatives Considered** A router with a full model ViewSet, a flat message collection, and cursor pagination.
-- **Consequences** Explicit routes expose five operations and keep parent access visible in the request path. Strict input validation exposes client mistakes as 400 responses. Page numbers give clients totals and navigation links, with the usual possibility of rows shifting between pages as records are added. All authenticated staff share one company scope until TASK-005 establishes formal rules.
+- **Consequences** Explicit routes expose five operations and keep parent access visible in the request path. Strict input validation exposes client mistakes as 400 responses. Page numbers give clients totals and navigation links, with the usual possibility of rows shifting between pages as records are added. ADR-007 supersedes the interim staff gate.
+- **Date** 2026-11-24
+
+## ADR-007 · Use Django sessions and explicit support roles
+
+- **Status** Accepted
+- **Context** Support data needs browser authentication and operation-specific authorization before the frontend adds its login flow.
+- **Decision** Keep Django's existing User model and PostgreSQL-backed sessions. Use HttpOnly, SameSite Lax cookies, with Secure enabled outside local development. Bootstrap a masked CSRF token in JSON and protect anonymous login with Django's CSRF middleware. Manage Support Agent and Support Manager through Django Groups and the four support model permissions. `is_staff` stays an administrative flag. Active superusers have an explicit access rule.
+- **Alternatives Considered** JWTs with a refresh flow, a custom role model, and a migration that creates groups alongside model permissions.
+- **Consequences** Django supplies server-side session invalidation and password hashing. Adding a login or write flow requires a cookie jar and CSRF header. A post-migration management command provisions exact grants when Django's model permissions are available. Same-site HTTPS deployment can use equivalent cookies and an explicit cross-origin allowlist where needed. The process-local login limit needs a shared layer for multi-worker deployments.
 - **Date** 2026-11-24

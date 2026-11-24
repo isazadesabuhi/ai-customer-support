@@ -9,8 +9,8 @@ Runtime settings read process environment variables. Debug output defaults to of
 ```mermaid
 flowchart LR
     subgraph Host["Developer machine"]
-        UI["Next.js · 127.0.0.1:3000"]
-        API["Django · 127.0.0.1:8000"]
+        UI["Next.js · localhost:3000"]
+        API["Django · localhost:8000"]
         subgraph Docker["Docker Engine"]
             DB["PostgreSQL 17.12 · db:5432"]
             Volume[("postgres_data")]
@@ -32,11 +32,15 @@ The `support` app contains the models for customers, conversations, messages, an
 
 `config/urls.py` mounts `support/urls.py` at `/api/`. The URL patterns dispatch to DRF generic list, create, and retrieve views. Django's model UUID lookup validates the path identifier after the permission check and maps malformed and missing UUIDs to the same JSON 404.
 
-The views reuse the configured DRF authentication schemes. `IsSupportStaff` requires an authenticated staff user and runs again on individual and parent conversations. The nested messages view resolves and checks the parent once per request, then uses its related manager for list queries or passes it to the create serializer. Staff scope covers the single company's support data. TASK-005 will introduce formal authorization rules.
+The views use DRF Session Authentication and check both role eligibility and the permissions mapped to the HTTP method. The nested messages view resolves and authorizes the parent once per request, then uses its related manager for list queries or passes it to the create serializer. Support roles share the single company's support data.
 
 Read serializers select public fields. Conversation list, detail, and creation responses share a schema with a read-only customer summary. Create serializers accept only specific fields, reuse model validators, and run `full_clean()` before the atomic insert. They translate domain validation errors to HTTP 400. Scoped error handling returns a generic 500 for unexpected exceptions. API responses are private and disable caching.
 
 The conversation queryset joins `customer` with `select_related()` and applies an optional validated status filter. Message lists filter on their parent. Both lists reuse page-number pagination and stable model ordering with the UUID as the timestamp tie-breaker. See the [API reference](../api/endpoints.md) for the HTTP contract.
+
+## Authentication and sessions
+
+The `accounts` app handles CSRF bootstrap, login, current-user profiles, and logout under `/api/auth/`. Django's existing authentication backend verifies usernames and hashed passwords. Django stores sessions in PostgreSQL and sends an HttpOnly session cookie. The app resolves the Support Agent and Support Manager roles from Django groups. The `support` app consumes these roles and the operation-specific model grants. See the [authentication architecture](authentication.md) for the session lifecycle, role matrix, and browser security policy.
 
 ## Migrations
 

@@ -15,8 +15,8 @@ pytestmark = postgres_model_tests
 LIST_URL = reverse("support:conversation-list")
 
 
-def test_empty_conversation_list(staff_client):
-    response = staff_client.get(LIST_URL)
+def test_empty_conversation_list(agent_client):
+    response = agent_client.get(LIST_URL)
 
     assert response.status_code == 200
     assert response.json() == {
@@ -27,11 +27,11 @@ def test_empty_conversation_list(staff_client):
     }
 
 
-def test_list_and_detail_share_public_schema(staff_client, message):
+def test_list_and_detail_share_public_schema(agent_client, message):
     conversation = message.conversation
     customer = conversation.customer
-    listing = staff_client.get(LIST_URL)
-    detail = staff_client.get(
+    listing = agent_client.get(LIST_URL)
+    detail = agent_client.get(
         reverse("support:conversation-detail", args=[conversation.pk])
     )
 
@@ -60,8 +60,8 @@ def test_list_and_detail_share_public_schema(staff_client, message):
     assert "private" in detail.headers["Cache-Control"]
 
 
-def test_create_conversation_uses_existing_customer_and_default(staff_client, customer):
-    response = staff_client.post(
+def test_create_conversation_uses_existing_customer_and_default(agent_client, customer):
+    response = agent_client.post(
         LIST_URL,
         {"customer_id": str(customer.pk), "subject": "Refund request"},
         format="json",
@@ -75,14 +75,14 @@ def test_create_conversation_uses_existing_customer_and_default(staff_client, cu
     assert Customer.objects.count() == 1
     assert (
         response.json()
-        == staff_client.get(
+        == agent_client.get(
             reverse("support:conversation-detail", args=[created.pk])
         ).json()
     )
 
 
 @pytest.mark.parametrize("status", ConversationStatus.values)
-def test_conversation_status_filter(staff_client, customer, status):
+def test_conversation_status_filter(agent_client, customer, status):
     conversations = {
         value: Conversation.objects.create(
             customer=customer, subject=value, status=value
@@ -90,14 +90,14 @@ def test_conversation_status_filter(staff_client, customer, status):
         for value in ConversationStatus.values
     }
 
-    response = staff_client.get(LIST_URL, {"status": status})
+    response = agent_client.get(LIST_URL, {"status": status})
 
     assert response.status_code == 200
     assert response.json()["count"] == 1
     assert response.json()["results"][0]["id"] == str(conversations[status].pk)
 
 
-def test_conversation_order_and_pagination(staff_client, customer):
+def test_conversation_order_and_pagination(agent_client, customer):
     Conversation.objects.bulk_create(
         [
             Conversation(id=UUID(int=n), customer=customer, subject=f"Ticket {n}")
@@ -110,14 +110,14 @@ def test_conversation_order_and_pagination(staff_client, customer):
         created_at=now - timedelta(days=1)
     )
 
-    first = staff_client.get(LIST_URL).json()
+    first = agent_client.get(LIST_URL).json()
     assert first["count"] == 21
     assert [item["id"] for item in first["results"]] == [
         str(UUID(int=n)) for n in range(20, 0, -1)
     ]
     assert first["previous"] is None
     assert parse_qs(urlsplit(first["next"]).query) == {"page": ["2"]}
-    second = staff_client.get(
+    second = agent_client.get(
         LIST_URL, {"status": "open", "page": 2, "page_size": 2}
     ).json()
     assert [item["id"] for item in second["results"]] == [
@@ -132,13 +132,13 @@ def test_conversation_order_and_pagination(staff_client, customer):
         "page_size": ["2"],
         "status": ["open"],
     }
-    largest = staff_client.get(LIST_URL, {"page_size": 100})
+    largest = agent_client.get(LIST_URL, {"page_size": 100})
     assert largest.status_code == 200
     assert len(largest.json()["results"]) == 21
 
 
 def test_conversation_list_query_count_stays_bounded(
-    staff_client, django_assert_max_num_queries
+    agent_client, django_assert_max_num_queries
 ):
     for number in range(5):
         customer = Customer.objects.create(
@@ -146,8 +146,9 @@ def test_conversation_list_query_count_stays_bounded(
         )
         Conversation.objects.create(customer=customer, subject=f"Ticket {number}")
 
-    with django_assert_max_num_queries(3):
-        response = staff_client.get(LIST_URL)
+    # Allow three fixed authorization queries for a fresh ordinary user.
+    with django_assert_max_num_queries(6):
+        response = agent_client.get(LIST_URL)
 
     assert response.status_code == 200
     assert len(response.json()["results"]) == 5

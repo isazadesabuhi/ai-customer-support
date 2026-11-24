@@ -1,6 +1,7 @@
 import pytest
 from rest_framework.test import APIClient
 
+from accounts.roles import SUPPORT_AGENT_GROUP
 from support.models import Conversation, Customer, Message, MessageSender
 
 
@@ -31,14 +32,14 @@ def reviewer(django_user_model):
 
 
 @pytest.fixture
-def staff_user(django_user_model):
-    return django_user_model.objects.create_user(
-        username="support-staff", is_staff=True
-    )
+def agent_user(django_user_model, support_groups):
+    user = django_user_model.objects.create_user(username="api-agent")
+    user.groups.add(support_groups[SUPPORT_AGENT_GROUP])
+    return user
 
 
 @pytest.fixture
-def staff_client(staff_user):
+def agent_client(agent_user):
     client = APIClient()
-    client.force_authenticate(user=staff_user)
+    client.force_authenticate(user=agent_user)
     return client

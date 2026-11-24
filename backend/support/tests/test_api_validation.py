@@ -33,7 +33,7 @@ LIST_URL = reverse("support:conversation-list")
     ],
 )
 def test_invalid_conversation_payload_does_not_create_record(
-    staff_client, customer, field, value
+    agent_client, customer, field, value
 ):
     payload = {"customer_id": str(customer.pk), "subject": "Refund request"}
     if value is None:
@@ -41,7 +41,7 @@ def test_invalid_conversation_payload_does_not_create_record(
     else:
         payload[field] = value
 
-    response = staff_client.post(LIST_URL, payload, format="json")
+    response = agent_client.post(LIST_URL, payload, format="json")
 
     assert response.status_code == 400
     assert field in response.json()
@@ -68,7 +68,7 @@ def test_invalid_conversation_payload_does_not_create_record(
     ],
 )
 def test_invalid_message_payload_does_not_create_record(
-    staff_client, conversation, field, value
+    agent_client, conversation, field, value
 ):
     payload = {"sender": "agent", "content": "An agent reply"}
     if value is None:
@@ -76,7 +76,7 @@ def test_invalid_message_payload_does_not_create_record(
     else:
         payload[field] = value
 
-    response = staff_client.post(
+    response = agent_client.post(
         reverse("support:conversation-messages", args=[conversation.pk]),
         payload,
         format="json",
@@ -87,8 +87,8 @@ def test_invalid_message_payload_does_not_create_record(
     assert not Message.objects.exists()
 
 
-def test_message_content_accepts_exact_limit(staff_client, conversation):
-    response = staff_client.post(
+def test_message_content_accepts_exact_limit(agent_client, conversation):
+    response = agent_client.post(
         reverse("support:conversation-messages", args=[conversation.pk]),
         {"sender": "agent", "content": "x" * BODY_MAX_LENGTH},
         format="json",
@@ -99,14 +99,14 @@ def test_message_content_accepts_exact_limit(staff_client, conversation):
 
 
 def test_model_validation_errors_use_public_field_names_and_roll_back(
-    staff_client, customer, monkeypatch
+    agent_client, customer, monkeypatch
 ):
     def fail(self):
         Conversation.objects.create(customer=customer, subject="Should be rolled back")
         raise ValidationError({"customer": "Customer is unavailable."})
 
     monkeypatch.setattr(Conversation, "full_clean", fail)
-    response = staff_client.post(
+    response = agent_client.post(
         LIST_URL,
         {"customer_id": str(customer.pk), "subject": "Refund request"},
         format="json",
@@ -120,8 +120,8 @@ def test_model_validation_errors_use_public_field_names_and_roll_back(
 @pytest.mark.parametrize(
     "query", ["status=", "status=unknown", "status=open&status=closed"]
 )
-def test_invalid_status_filter(staff_client, query):
-    response = staff_client.get(f"{LIST_URL}?{query}")
+def test_invalid_status_filter(agent_client, query):
+    response = agent_client.get(f"{LIST_URL}?{query}")
 
     assert response.status_code == 400
     assert "status" in response.json()
@@ -146,10 +146,10 @@ def test_invalid_status_filter(staff_client, query):
         ("page", "page=2"),
     ],
 )
-def test_invalid_pagination(staff_client, conversation, endpoint, field, query):
+def test_invalid_pagination(agent_client, conversation, endpoint, field, query):
     args = [conversation.pk] if endpoint == "conversation-messages" else []
     url = reverse(f"support:{endpoint}", args=args)
-    response = staff_client.get(f"{url}?{query}")
+    response = agent_client.get(f"{url}?{query}")
 
     assert response.status_code == 400
     assert field in response.json()
@@ -158,8 +158,8 @@ def test_invalid_pagination(staff_client, conversation, endpoint, field, query):
 @pytest.mark.parametrize(
     "body, key", [("[1]", "non_field_errors"), ('{"subject":', "detail")]
 )
-def test_malformed_or_wrong_shape_json(staff_client, body, key):
-    response = staff_client.post(LIST_URL, body, content_type="application/json")
+def test_malformed_or_wrong_shape_json(agent_client, body, key):
+    response = agent_client.post(LIST_URL, body, content_type="application/json")
 
     assert response.status_code == 400
     assert key in response.json()

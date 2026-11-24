@@ -2,18 +2,34 @@
 
 ## Overview
 
-- Overall progress is 2 of 40 tasks completed.
+- Overall progress is 3 of 40 tasks completed.
 - Current phase is Phase 1 — Foundation.
-- Latest completed task is TASK-004 — Implement Conversation REST APIs.
+- Latest completed task is TASK-005 — Implement Authentication and Authorization.
 
 ## Task activity
 
 | Category | Tasks |
 | --- | --- |
-| Completed | TASK-003 and TASK-004 |
+| Completed | TASK-003, TASK-004, and TASK-005 |
 | In progress | None |
 | Partially completed | TASK-001 and TASK-002 |
 | Blocked | TASK-002 Docker health and persistence verification, TASK-001 Node.js 24 verification and fresh registry audit |
+
+## TASK-005 verification
+
+Django sessions support CSRF bootstrap, username and password login, current-user profiles, and logout. The conversations and messages API checks support roles and operation-specific model permissions. Django groups are provisioned by `python manage.py provision_support_roles` after framework migrations. See the [authentication architecture](../architecture/authentication.md).
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Django and PostgreSQL | `python manage.py check`, `python manage.py check_database` | Passed against local PostgreSQL. |
+| Migration state and role provisioning | `python manage.py makemigrations --check --dry-run`, `python manage.py showmigrations`, `python manage.py provision_support_roles` | Passed. Framework and support migrations were applied. The command configured both groups. No new schema migration was needed. |
+| PostgreSQL authentication, API, and model suites | `python -m pytest -m postgres --ds=config.postgres_test_settings` | 243 passed, 49 deselected. Includes 41 account cases, 125 support API cases, 76 model cases, and 1 connection case. The reserved database was absent before and after the run. |
+| Live HTTP authentication workflow | `accounts/tests/test_live_session.py` in the PostgreSQL suite | Passed using loopback Django and an HTTP cookie jar. Verified login, profile, conversation list, denied write without CSRF, valid write, logout, and old-session rejection. |
+| Database-free regression suite | `python -m pytest` | 49 passed, 243 PostgreSQL tests skipped as expected. Includes 17 browser-policy and runtime settings cases. |
+| Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
+| Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1. Vitest passed 1 test. |
+
+Verified on 2026-11-24. Role removal and individual permission revocation take effect on subsequent requests. The deployment assumptions are same-site HTTPS and backend-only session storage. The login-attempt throttle is process-local. Follow-up deployment controls include distributed rate limiting and trusted proxy integration. See the [authentication limits](../architecture/authentication.md#limits).
 
 ## TASK-004 verification
 
@@ -28,7 +44,7 @@ Five staff-only DRF operations list, create, and retrieve conversations and list
 | Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
 | Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1. Vitest passed 1 test. |
 
-Verified on 2026-11-24. The API uses the interim single-company policy. All authenticated staff can access support records. Formal authentication workflows and more specific authorization rules are planned for TASK-005. Earlier task statuses are recorded in the roadmap.
+Verified on 2026-11-24 with the interim staff policy. TASK-005 subsequently replaced it with role and permission checks. Earlier task statuses are recorded in the roadmap.
 
 ## TASK-003 verification
 
@@ -113,4 +129,4 @@ Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adop
 
 ## Next planned task
 
-TASK-005 — Implement Authentication and Authorization will introduce formal authentication workflows and permission rules. See the [canonical roadmap](roadmap.md).
+TASK-006 — Create Sample Customer Support Data will introduce realistic fictional records and repeatable seed commands for development and testing. See the [canonical roadmap](roadmap.md).

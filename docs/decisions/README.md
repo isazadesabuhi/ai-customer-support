@@ -72,3 +72,12 @@ Use these fields for future records.
 - **Alternatives Considered** JWTs with a refresh flow, a custom role model, and a migration that creates groups alongside model permissions.
 - **Consequences** Django supplies server-side session invalidation and password hashing. Adding a login or write flow requires a cookie jar and CSRF header. A post-migration management command provisions exact grants when Django's model permissions are available. Same-site HTTPS deployment can use equivalent cookies and an explicit cross-origin allowlist where needed. The process-local login limit needs a shared layer for multi-worker deployments.
 - **Date** 2026-11-24
+
+## ADR-008 · Seed fictional support data with an explicit inventory
+
+- **Status** Accepted
+- **Context** Development and API demos need repeatable timelines with realistic fictional support cases.
+- **Decision** Derive UUID5 IDs from explicit customer and scenario keys and per-scenario message positions. Seed only missing rows and verify existing rows against the full inventory. Gate previews and writes to configured loopback development and the isolated PostgreSQL test database. Cleanup requires `--clear`, compares every owned row, and checks relationships before deleting inside a transaction. Store intended scenario characteristics in source so analysis and drafts remain available for separately verified AI work.
+- **Alternatives Considered** JSON fixtures with fixed IDs, email suffix matching, and a database ownership flag.
+- **Consequences** IDs and timestamps stay reproducible without a schema change. Cleanup can refuse ordinary edits or new child records. Changes to a published inventory require care with local databases seeded by the older version. See the [sample data reference](../development/sample-data.md).
+- **Date** 2026-11-24

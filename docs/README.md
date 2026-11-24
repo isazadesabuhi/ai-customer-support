@@ -5,6 +5,7 @@
 - [Authentication and authorization](architecture/authentication.md)
 - [API endpoints](api/endpoints.md)
 - [Local setup](development/setup.md), [conventions](development/conventions.md), [testing](development/testing.md), and [troubleshooting](development/troubleshooting.md)
+- [Fictional support sample data](development/sample-data.md)
 - [AI engineering notes](ai/README.md)
 - [Architecture decisions](decisions/README.md)
 - [Roadmap](tasks/roadmap.md) and [progress](tasks/progress.md)

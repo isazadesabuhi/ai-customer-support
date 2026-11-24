@@ -14,7 +14,8 @@ if debug_value not in {"true", "false"}:
     raise ImproperlyConfigured("DJANGO_DEBUG must be true or false.")
 
 DEBUG = debug_value == "true"
-local_development = os.getenv("DJANGO_ENV") == "development"
+DJANGO_ENV = os.getenv("DJANGO_ENV")
+local_development = DJANGO_ENV == "development"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "")
 if not SECRET_KEY.strip():
     if not local_development:

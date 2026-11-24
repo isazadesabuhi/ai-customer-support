@@ -136,6 +136,10 @@ A multi-column index covers a lookup by its leading field. The three relationshi
 
 PostgreSQL checks constraints even when an ORM write skips model validation. Call `full_clean()` in application code before saving user input because `save()` does not do it automatically. Validation covers email format, message and draft text length, and the analysis sender rule. Database checks protect shared invariants and foreign-key integrity across concurrent writers. Django applies `on_delete` policies when it collects related objects during ORM deletion. PostgreSQL foreign keys still guard direct SQL writes.
 
+## Development sample records
+
+The fictional dataset uses the normal `Customer` → `Conversation` → `Message` relationships and API visibility rules. The sample command supplies stable UUIDs and historical timestamps for these rows. Scenario metadata stays in the definitions. Analysis and draft tables retain their normal role in the domain. See the [sample data reference](../development/sample-data.md) for the inventory and supported cleanup procedure.
+
 ## Lifecycle and privacy
 
 A customer opens a conversation and sends messages. A customer message can have an analysis and several draft suggestions. A draft can record who reviewed it and when. AI execution and human review workflows are planned. The schema stores the analysis fields and draft text described above. Application logs should avoid message and draft text, addresses, and provider credentials. Generated text still needs review before it is used with a customer. Retention and deletion workflows are future work.

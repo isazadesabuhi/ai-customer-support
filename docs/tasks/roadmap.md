@@ -13,7 +13,7 @@ Allowed statuses are Not Started, In Progress, Completed, Partially Completed, a
 | TASK-003 | Design customer support data models. | Completed |
 | TASK-004 | Implement conversation REST APIs. | Completed |
 | TASK-005 | Implement authentication and authorization. | Completed |
-| TASK-006 | Create sample customer support data. | Not Started |
+| TASK-006 | Create sample customer support data. | Completed |
 
 ## Phase 2 — LLM Fundamentals
 

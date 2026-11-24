@@ -2,18 +2,34 @@
 
 ## Overview
 
-- Overall progress is 3 of 40 tasks completed.
+- Overall progress is 4 of 40 tasks completed.
 - Current phase is Phase 1 — Foundation.
-- Latest completed task is TASK-005 — Implement Authentication and Authorization.
+- Latest completed task is TASK-006 — Create Sample Customer Support Data.
 
 ## Task activity
 
 | Category | Tasks |
 | --- | --- |
-| Completed | TASK-003, TASK-004, and TASK-005 |
+| Completed | TASK-003, TASK-004, TASK-005, and TASK-006 |
 | In progress | None |
 | Partially completed | TASK-001 and TASK-002 |
 | Blocked | TASK-002 Docker health and persistence verification, TASK-001 Node.js 24 verification and fresh registry audit |
+
+## TASK-006 verification
+
+The sample dataset adds 8 fictional customers, 18 conversations, and 53 messages across all seven scenario categories. `seed_support_data`, `--dry-run`, and `--clear` use a deterministic UUID inventory and an explicit local database guard. Cleanup verifies matching records and refuses unexpected children. See the [sample data reference](../development/sample-data.md).
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Django, PostgreSQL, and schema synchronization | `python manage.py check`, `python manage.py check_database`, `python manage.py makemigrations --check --dry-run` | Passed on local PostgreSQL. No migration changes detected. |
+| Development preview and initial seed | `python manage.py seed_support_data --dry-run`, `python manage.py seed_support_data` | Preview and first seed each reported 8 customers, 18 conversations, and 53 messages. |
+| Development repeat and cleanup preview | `python manage.py seed_support_data`, `python manage.py seed_support_data --clear --dry-run` | Second seed created zero rows and reused all 79. Cleanup preview identified all 79. Development sample rows remain available for exploration. |
+| PostgreSQL suite | `python -m pytest -m postgres --ds=config.postgres_test_settings` | 267 passed, 95 deselected. Includes 24 new seed and API cases. Verified test database teardown. |
+| Database-free suite | `python -m pytest` | 95 passed, 267 skipped. Includes 44 new inventory and environment cases. |
+| Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
+| Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1. Vitest passed 1 test. |
+
+Verified on 2026-11-24. Destructive cleanup was verified only in the isolated PostgreSQL database. Keep the published dataset definitions stable for local databases seeded with this version. Development use assumes a local PostgreSQL server, including when its port is exposed by Docker.
 
 ## TASK-005 verification
 
@@ -129,4 +145,4 @@ Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adop
 
 ## Next planned task
 
-TASK-006 — Create Sample Customer Support Data will introduce realistic fictional records and repeatable seed commands for development and testing. See the [canonical roadmap](roadmap.md).
+TASK-007 — Integrate an LLM API will introduce a configurable provider, credentials, request and response handling, error handling, and mocked tests. See the [canonical roadmap](roadmap.md).

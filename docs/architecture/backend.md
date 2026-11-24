@@ -28,6 +28,8 @@ A PostgreSQL server can serve multiple databases. A database contains schemas, w
 
 The `support` app contains the models for customers, conversations, messages, analyses, and draft responses in [`support/models.py`](../../backend/support/models.py). Its migrations live in `support/migrations/`. Conversation and message views use these models directly. See the [support data model](data-model.md) for relationships, constraints, and indexes.
 
+The `seed_support_data` management command writes fictional customers, conversations, and messages from a deterministic inventory. Operators run it from the backend shell against local development or the isolated PostgreSQL test database. Its environment guard, transaction, and cleanup checks run independently of the HTTP request path. See the [sample data reference](../development/sample-data.md).
+
 ## Conversation and message API
 
 `config/urls.py` mounts `support/urls.py` at `/api/`. The URL patterns dispatch to DRF generic list, create, and retrieve views. Django's model UUID lookup validates the path identifier after the permission check and maps malformed and missing UUIDs to the same JSON 404.

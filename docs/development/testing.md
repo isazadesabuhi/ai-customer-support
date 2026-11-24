@@ -30,4 +30,15 @@ Add `accounts/tests` to the PostgreSQL command to focus on authentication. The t
 
 The `test_live_session.py` check uses a Django loopback server and an HTTP client with a cookie jar. It runs login, profile and conversation reads, a write with and without CSRF, logout, and stale-cookie rejection against the isolated PostgreSQL database. Database-free tests cover allowed and rejected origins and environment defaults. PostgreSQL tests verify the actual cookie flags. See the [authentication architecture](../architecture/authentication.md).
 
+## Sample data tests
+
+Run these commands from `backend/` with the virtual environment active. The first suite checks the dataset and verifies refusal of unapproved targets with no PostgreSQL connection. The second requires the local PostgreSQL service and the database variables from the [setup guide](setup.md#windows-powershell).
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/test_seed_inventory.py
+.\.venv\Scripts\python.exe -m pytest support/tests/test_seed_support_data.py -m postgres --ds=config.postgres_test_settings
+```
+
+The PostgreSQL tests verify deterministic timestamps and identity, idempotency, conflicts, dry-run SQL, rollback after failed inserts or deletes, and refusal to cascade into manually added records. They run in the dedicated pytest database. Authenticated API cases use the existing Agent and Manager roles and check filters, pagination, details, and message ordering. Anonymous and unassigned requests must still be rejected. See the [sample data reference](sample-data.md).
+
 Future tests should mock external API requests at the service boundary and exercise both successful and failed responses. Add Playwright for end-to-end flows once the frontend and API communicate.

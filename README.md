@@ -9,7 +9,7 @@ The frontend defines a foundation landing page. The backend serves a role-protec
 | Area | In the repository | Planned |
 | --- | --- | --- |
 | Frontend | Next.js App Router, React, TypeScript, Tailwind CSS, ESLint, Prettier, Vitest, React Testing Library | Agent inbox, draft review, Playwright |
-| Backend | Python, Django, Django REST Framework, session authentication, support roles, conversation and message APIs, PostgreSQL, Ruff, Pytest, pytest-django | Development sample data and AI integration |
+| Backend | Python, Django, Django REST Framework, session authentication, support roles, conversation and message APIs, PostgreSQL, fictional sample data, Ruff, Pytest, pytest-django | AI integration |
 | AI | Workflow documentation | OpenAI Python SDK, Pydantic validation, evaluations |
 
 ## Repository
@@ -24,6 +24,8 @@ The frontend defines a foundation landing page. The backend serves a role-protec
 Follow the [local setup guide](docs/development/setup.md) to install dependencies, start PostgreSQL and both applications, and run the checks.
 
 On Windows, double-click `Start Frontend.cmd` and `Start Backend.cmd` in the repository folder after completing the [one-time setup](docs/development/setup.md#windows-powershell).
+
+Populate a local database with the [fictional support dataset](docs/development/sample-data.md) to inspect the conversation API.
 
 ## Roadmap and documentation
 

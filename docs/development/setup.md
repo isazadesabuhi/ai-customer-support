@@ -125,6 +125,18 @@ npm run dev -- --hostname 127.0.0.1
 
 Open `http://localhost:3000/` for the foundation page. Access the Django API at `http://localhost:8000/api/`. Both servers bind to loopback. Use `localhost` consistently in client URLs so browser origins and cookie hosts line up. Django's root path returns 404.
 
+## Populate the development database
+
+With local PostgreSQL running, database variables loaded, and Django migrations applied, use `backend/` to preview and add the fictional conversations. With an activated virtual environment on macOS or Linux, replace the Windows executable with `python`.
+
+```powershell
+$env:DJANGO_ENV = 'development'
+.\.venv\Scripts\python.exe manage.py seed_support_data --dry-run
+.\.venv\Scripts\python.exe manage.py seed_support_data
+```
+
+The seed command is safe to repeat against the same dataset. It refuses conflicting rows. See the [sample data reference](sample-data.md) for inspection and cleanup.
+
 ## Inspect the API locally
 
 Use the development database with migrations applied and start the backend using the commands above. In a second `backend/` terminal with the same Django environment loaded, provision the groups and open the management shell. Use `python` with the virtual environment active on macOS or Linux.

@@ -1,3 +1,5 @@
-"""URL configuration reserved for future application endpoints."""
+"""Project URL configuration."""
 
-urlpatterns = []
+from django.urls import include, path
+
+urlpatterns = [path("api/", include("support.urls"))]

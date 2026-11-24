@@ -1,4 +1,5 @@
 import pytest
+from rest_framework.test import APIClient
 
 from support.models import Conversation, Customer, Message, MessageSender
 
@@ -27,3 +28,17 @@ def message(conversation):
 @pytest.fixture
 def reviewer(django_user_model):
     return django_user_model.objects.create_user(username="support-reviewer")
+
+
+@pytest.fixture
+def staff_user(django_user_model):
+    return django_user_model.objects.create_user(
+        username="support-staff", is_staff=True
+    )
+
+
+@pytest.fixture
+def staff_client(staff_user):
+    client = APIClient()
+    client.force_authenticate(user=staff_user)
+    return client

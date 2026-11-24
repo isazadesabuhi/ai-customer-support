@@ -54,3 +54,12 @@ Use these fields for future records.
 - **Alternatives Considered** Sequential IDs, case-sensitive email uniqueness, one analysis history table, and nulling reviewer references on deletion.
 - **Consequences** UUIDs work before insertion and cost more index space than integer IDs. Email case variants map to one customer. Protecting references can require deliberate data-retention decisions later. The single current analysis simplifies lookups. An analysis history would need a schema change. Drafts retain separate attempts and review metadata.
 - **Date** 2026-11-24
+
+## ADR-006 · Expose conversation and message APIs to staff
+
+- **Status** Accepted
+- **Context** Support staff need a small HTTP surface for conversations and messages before formal authentication and authorization are introduced.
+- **Decision** Use DRF generic list, create, and retrieve views with explicit routes. Nest messages under the parent conversation UUID and check parent permissions. Give read serializers explicit public fields and restrict each create serializer to its documented inputs. Reuse model validation before insertion. Limit the API to authenticated staff using the existing authentication schemes. Paginate both lists with a default of 20 and a maximum of 100 and validate requested pages and sizes.
+- **Alternatives Considered** A router with a full model ViewSet, a flat message collection, and cursor pagination.
+- **Consequences** Explicit routes expose five operations and keep parent access visible in the request path. Strict input validation exposes client mistakes as 400 responses. Page numbers give clients totals and navigation links, with the usual possibility of rows shifting between pages as records are added. All authenticated staff share one company scope until TASK-005 establishes formal rules.
+- **Date** 2026-11-24

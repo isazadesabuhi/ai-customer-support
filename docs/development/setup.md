@@ -108,7 +108,36 @@ npm ci
 npm run dev -- --hostname 127.0.0.1
 ```
 
-Open `http://127.0.0.1:3000/` for the foundation page. Django listens at `http://127.0.0.1:8000/`, where a 404 is expected with the empty URL configuration.
+Open `http://127.0.0.1:3000/` for the foundation page. Django listens at `http://127.0.0.1:8000/` and serves the staff-only API under `/api/`. Its root path returns 404.
+
+## Inspect the API locally
+
+Use the development database with migrations applied. In a `backend/` terminal with the Django environment loaded, open the management shell. Use `python manage.py shell` with the virtual environment active on macOS or Linux.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py shell
+```
+
+At the Python prompt, create a local-only staff account with a unique username and private password. This creates an ordinary user with the staff flag.
+
+```python
+from getpass import getpass
+from django.contrib.auth import get_user_model
+
+get_user_model().objects.create_user(
+    username=input("Local staff username: "),
+    password=getpass("Local staff password: "),
+    is_staff=True,
+)
+```
+
+With Django running on loopback, run the following command with the username you chose. `curl` prompts for the password without including it in the command. Use `curl` on macOS or Linux. Keep this Basic Authentication workflow local and use a disposable development password.
+
+```powershell
+curl.exe --user local-staff http://127.0.0.1:8000/api/conversations/
+```
+
+An empty database returns a paginated list with zero conversations. Sending the same request without credentials returns 403. Conversation creation requires a customer UUID already in the database. See the [API reference](../api/endpoints.md) for JSON examples and response codes.
 
 ## Stop and restart PostgreSQL
 

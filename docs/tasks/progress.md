@@ -2,18 +2,33 @@
 
 ## Overview
 
-- Overall progress is 1 of 40 tasks completed.
+- Overall progress is 2 of 40 tasks completed.
 - Current phase is Phase 1 — Foundation.
-- Current task is TASK-003 — Design Customer Support Data Models.
+- Latest completed task is TASK-004 — Implement Conversation REST APIs.
 
 ## Task activity
 
 | Category | Tasks |
 | --- | --- |
-| Completed | TASK-003 |
+| Completed | TASK-003 and TASK-004 |
 | In progress | None |
 | Partially completed | TASK-001 and TASK-002 |
 | Blocked | TASK-002 Docker health and persistence verification, TASK-001 Node.js 24 verification and fresh registry audit |
+
+## TASK-004 verification
+
+Five staff-only DRF operations list, create, and retrieve conversations and list and create their messages. The API uses explicit UUID lookups, validated status filters, stable page-number pagination, and strict JSON inputs. Nested routes authorize the parent and derive message ownership from the path. Agent messages are the only supported message creation operation. See the [API reference](../api/endpoints.md).
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Django system and database checks | `python manage.py check`, `python manage.py check_database` | Passed against the local PostgreSQL service. |
+| Migration synchronization | `python manage.py makemigrations --check --dry-run` | Passed. No changes detected. |
+| PostgreSQL API and regression suite | `python -m pytest -m postgres --ds=config.postgres_test_settings` | 174 passed. This includes 97 new API cases, 76 existing model cases, and 1 connectivity case. The reserved database was absent before and after the run. |
+| Database-free regression suite | `python -m pytest` | 32 passed. The 174 PostgreSQL cases were skipped in this mode. |
+| Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
+| Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1. Vitest passed 1 test. |
+
+Verified on 2026-11-24. The API uses the interim single-company policy. All authenticated staff can access support records. Formal authentication workflows and more specific authorization rules are planned for TASK-005. Earlier task statuses are recorded in the roadmap.
 
 ## TASK-003 verification
 
@@ -98,4 +113,4 @@ Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adop
 
 ## Next planned task
 
-TASK-004 — Implement Conversation REST APIs will expose controlled DRF endpoints for retrieving and creating conversations and messages. See the [canonical roadmap](roadmap.md).
+TASK-005 — Implement Authentication and Authorization will introduce formal authentication workflows and permission rules. See the [canonical roadmap](roadmap.md).

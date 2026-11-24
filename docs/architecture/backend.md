@@ -1,6 +1,6 @@
 # Backend architecture
 
-`manage.py` runs Django commands. The `config/` package holds settings, URL configuration, and ASGI and WSGI entry points. Django REST Framework is registered in `INSTALLED_APPS`. Future feature apps will use DRF for request validation, HTTP responses, and API policy. The initial URL configuration is empty.
+`manage.py` runs Django commands. The `config/` package holds settings, URL configuration, and ASGI and WSGI entry points. Django REST Framework handles HTTP requests under `/api/`. The backend root returns 404.
 
 Runtime settings read process environment variables. Debug output defaults to off and allowed hosts default to loopback. Setting `DJANGO_ENV=development` allows a per-process signing key. Other runtime environments require an explicit, non-empty `DJANGO_SECRET_KEY`.
 
@@ -26,7 +26,17 @@ A PostgreSQL server can serve multiple databases. A database contains schemas, w
 
 ## Support data
 
-The `support` app contains the models for customers, conversations, messages, analyses, and draft responses in [`support/models.py`](../../backend/support/models.py). Its migrations live in `support/migrations/`. Future services and DRF endpoints will use these models as their persistence boundary. See the [support data model](data-model.md) for relationships, constraints, and indexes.
+The `support` app contains the models for customers, conversations, messages, analyses, and draft responses in [`support/models.py`](../../backend/support/models.py). Its migrations live in `support/migrations/`. Conversation and message views use these models directly. See the [support data model](data-model.md) for relationships, constraints, and indexes.
+
+## Conversation and message API
+
+`config/urls.py` mounts `support/urls.py` at `/api/`. The URL patterns dispatch to DRF generic list, create, and retrieve views. Django's model UUID lookup validates the path identifier after the permission check and maps malformed and missing UUIDs to the same JSON 404.
+
+The views reuse the configured DRF authentication schemes. `IsSupportStaff` requires an authenticated staff user and runs again on individual and parent conversations. The nested messages view resolves and checks the parent once per request, then uses its related manager for list queries or passes it to the create serializer. Staff scope covers the single company's support data. TASK-005 will introduce formal authorization rules.
+
+Read serializers select public fields. Conversation list, detail, and creation responses share a schema with a read-only customer summary. Create serializers accept only specific fields, reuse model validators, and run `full_clean()` before the atomic insert. They translate domain validation errors to HTTP 400. Scoped error handling returns a generic 500 for unexpected exceptions. API responses are private and disable caching.
+
+The conversation queryset joins `customer` with `select_related()` and applies an optional validated status filter. Message lists filter on their parent. Both lists reuse page-number pagination and stable model ordering with the UUID as the timestamp tie-breaker. See the [API reference](../api/endpoints.md) for the HTTP contract.
 
 ## Migrations
 

@@ -1,18 +1,20 @@
 # Architecture overview
 
-The monorepo holds two independently runnable applications. Next.js serves the foundation page. Django registers Django REST Framework and reads PostgreSQL connection settings. The Compose database service is configured. See the [progress tracker](../tasks/progress.md) for live verification status.
+The monorepo holds two independently runnable applications. Next.js serves the foundation page. Django registers Django REST Framework and the `support` data layer. Compose defines the PostgreSQL service. See the [support data model](data-model.md) and [progress tracker](../tasks/progress.md).
 
-The solid edge shows the configured database connection. Dashed edges show planned request flow.
+Solid edges show application components and their configured database connection. Dashed edges show planned request flow.
 
 ```mermaid
 flowchart TD
     Frontend["Next.js frontend"]
     Backend["Django + DRF (API endpoints planned)"]
-    Database["PostgreSQL 17 (configured, runtime unverified)"]
+    Support["Support models and migrations"]
+    Database["PostgreSQL 17"]
     AI["AI services (planned)"]
     Provider["LLM provider (planned)"]
     Frontend -.-> Backend
-    Backend --> Database
+    Backend --> Support
+    Support --> Database
     Backend -.-> AI
     AI -.-> Provider
 ```

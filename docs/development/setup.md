@@ -142,3 +142,17 @@ In `frontend/`, run `npm run lint`, `npm run typecheck`, `npm run format:check`,
 In `backend/` with the virtual environment active, run `python manage.py check` in the configured development shell. Run `ruff check .`, `ruff format --check .`, and `python -m pytest`. Use `ruff check --fix .` to apply safe lint fixes and sort imports and `ruff format .` to apply formatting.
 
 Use `npm ci` for a clean frontend install and a fresh virtual environment for a clean backend install. When updating dependencies, keep direct and transitive pins in sync, run `python -m pip check`, and verify the checks again.
+
+## Support migrations
+
+Start the local PostgreSQL service and load the existing database variables using the steps above. In `backend/`, generate a migration only when you change the models. The initial support migration is already included in `support/migrations/`.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py makemigrations support
+.\.venv\Scripts\python.exe manage.py migrate --plan
+.\.venv\Scripts\python.exe manage.py migrate
+.\.venv\Scripts\python.exe manage.py showmigrations support
+.\.venv\Scripts\python.exe manage.py makemigrations --check --dry-run
+```
+
+Review the generated operations and migration plan before applying changes. `showmigrations` reads the PostgreSQL migration history. A checked `0001_initial` entry indicates that the schema is applied. The dry run detects model changes that still need a migration. Use the equivalent virtual environment's `python` on macOS or Linux.

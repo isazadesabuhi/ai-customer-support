@@ -24,9 +24,13 @@ Compose starts PostgreSQL and owns its volume. Django runs on the host and uses 
 
 A PostgreSQL server can serve multiple databases. A database contains schemas, which group tables by name. A table stores rows with named columns. A primary key identifies one row, a foreign key enforces that a referenced row exists, and an index such as one on a foreign key can speed up a lookup. Unique and other constraints enforce data rules even when writes come from different processes. PostgreSQL offers transactional writes, concurrent access, and database-enforced integrity for the planned support workflow.
 
+## Support data
+
+The `support` app contains the models for customers, conversations, messages, analyses, and draft responses in [`support/models.py`](../../backend/support/models.py). Its migrations live in `support/migrations/`. Future services and DRF endpoints will use these models as their persistence boundary. See the [support data model](data-model.md) for relationships, constraints, and indexes.
+
 ## Migrations
 
-`makemigrations` generates versioned migration files from model changes. `migrate` applies existing migration operations and tracks them in the target database's `django_migrations` table. `showmigrations` displays that history. Review and version future migration files because schema changes can lock tables or require compatible application deployments. This task uses Django's framework migration files for auth, content types, and sessions.
+`makemigrations` generates versioned migration files from model changes. `migrate` applies existing migration operations and tracks them in the target database's `django_migrations` table. `showmigrations` displays that history. Review and version migration files because schema changes can lock tables or require compatible application deployments. The support app's initial migration adds its tables alongside the existing Django framework tables.
 
 Future Django apps should group models and API code by business domain. Views should validate and authorize requests, call services for business operations, and translate outcomes into responses. Keep provider calls and response validation in dedicated AI services once introduced.
 

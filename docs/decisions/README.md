@@ -45,3 +45,12 @@ Use these fields for future records.
 - **Alternatives Considered** A manually installed PostgreSQL service, an all-container application stack, and retaining SQLite for development.
 - **Consequences** A pinned image and named volume make startup and restart predictable. The host workflow keeps the existing virtual environment and frontend tooling. Database integration requires a Docker engine, and the local application role needs `CREATEDB` for pytest-django. Database-free tests remain available without the service.
 - **Date** 2026-11-23
+
+## ADR-005 · Model the support conversation lifecycle
+
+- **Status** Accepted
+- **Context** The support domain needs stable identifiers, consistent customer identity, message-level AI records, and reliable review metadata.
+- **Decision** Generate UUIDs in Python for the five support models. Validate normalized customer email and enforce case-insensitive uniqueness with a PostgreSQL expression index. Protect referenced customers and reviewers. Cascade conversation and message deletion to their owned records. Give each message one current analysis and multiple drafts. Enforce draft status and review metadata together with a database check.
+- **Alternatives Considered** Sequential IDs, case-sensitive email uniqueness, one analysis history table, and nulling reviewer references on deletion.
+- **Consequences** UUIDs work before insertion and cost more index space than integer IDs. Email case variants map to one customer. Protecting references can require deliberate data-retention decisions later. The single current analysis simplifies lookups. An analysis history would need a schema change. Drafts retain separate attempts and review metadata.
+- **Date** 2026-11-24

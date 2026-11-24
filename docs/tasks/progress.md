@@ -2,18 +2,37 @@
 
 ## Overview
 
-- Overall progress is 0 of 40 tasks completed.
+- Overall progress is 1 of 40 tasks completed.
 - Current phase is Phase 1 — Foundation.
-- Current task is TASK-002 — Configure Django and PostgreSQL.
+- Current task is TASK-003 — Design Customer Support Data Models.
 
 ## Task activity
 
 | Category | Tasks |
 | --- | --- |
-| Completed | None |
+| Completed | TASK-003 |
 | In progress | None |
 | Partially completed | TASK-001 and TASK-002 |
-| Blocked | TASK-002 live database verification and TASK-001 Node.js 24 verification and fresh registry audit |
+| Blocked | TASK-002 Docker health and persistence verification, TASK-001 Node.js 24 verification and fresh registry audit |
+
+## TASK-003 verification
+
+The `support` app defines Customer, Conversation, Message, AIAnalysis, and DraftResponse. The initial migration adds five tables, model constraints, and five explicit query indexes. See the [support data model](../architecture/data-model.md) for relationships, deletion behavior, and validation boundaries.
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Django system and database checks | `python manage.py check`, `python manage.py check_database` | Passed on local PostgreSQL. |
+| Migration generation and review | `python manage.py makemigrations support` and review of `support/migrations/0001_initial.py` | Generated successfully. The migration contains only table creation, indexes, and constraints. |
+| Model and migration synchronization | `python manage.py makemigrations --check --dry-run` | Passed against reachable PostgreSQL. No changes detected. |
+| Development migration | `python manage.py migrate` and `python manage.py showmigrations support` | Applied `support.0001_initial`. Verified five tables, primary and foreign keys, named constraints, and query indexes. A second `migrate` had nothing to apply and existing migration history was preserved. |
+| Database-free backend suite | `python -m pytest` | 32 passed. The 77 PostgreSQL cases were skipped in this mode. |
+| PostgreSQL suite | `python -m pytest -m postgres --ds=config.postgres_test_settings` | 77 passed, including 76 support cases and the existing connectivity case. Verified test database teardown. |
+| Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
+| Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1. Vitest passed 1 test. |
+
+Verified on 2026-11-24. Once PostgreSQL became reachable, all required TASK-003 checks passed. The development migration was additive. The only test change after the first PostgreSQL run was to check the pending-draft index predicate through PostgreSQL's catalog because Django's B-tree introspection omits that predicate. See the [migration guide](../development/setup.md#support-migrations) and [testing guide](../development/testing.md). Earlier task statuses are recorded in the roadmap.
+
+The current schema holds one analysis per message. Email format, text length, and the analysis sender rule are checked at the model validation boundary. See the [support data model](../architecture/data-model.md#indexes-and-integrity).
 
 ## TASK-002 verification
 
@@ -79,4 +98,4 @@ Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adop
 
 ## Next planned task
 
-TASK-003 — Design Customer Support Data Models will introduce the models for customers, conversations, messages, AI analysis, and draft responses. See the [canonical roadmap](roadmap.md).
+TASK-004 — Implement Conversation REST APIs will expose controlled DRF endpoints for retrieving and creating conversations and messages. See the [canonical roadmap](roadmap.md).

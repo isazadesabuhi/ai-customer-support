@@ -4,7 +4,7 @@ This project is a production-oriented portfolio application for learning practic
 
 ## Current status
 
-The frontend defines a foundation landing page. The backend loads Django and Django REST Framework with PostgreSQL settings and an empty URL configuration. Docker Compose defines the local database service. See the [progress tracker](docs/tasks/progress.md) for database verification results.
+The frontend defines a foundation landing page. The backend defines the support domain models and uses PostgreSQL through Django. Docker Compose defines the local database service. See the [support data model](docs/architecture/data-model.md) and [progress tracker](docs/tasks/progress.md).
 
 | Area | In the repository | Planned |
 | --- | --- | --- |

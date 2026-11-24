@@ -26,6 +26,19 @@ Check `node --version`, `npm --version` (`npm.cmd --version` in PowerShell), and
 
 The [frontend manifest](../../frontend/package.json) pins direct dependencies and the [npm lockfile](../../frontend/package-lock.json) records the resolved graph. The [runtime requirements](../../backend/requirements/base.txt) and [development requirements](../../backend/requirements/dev.txt) pin Python packages and their transitive dependencies. Platform markers select Windows-only dependencies.
 
+## Windows launchers
+
+After the one-time [Windows PowerShell setup](#windows-powershell), double-click either file in the repository folder. Each opens its own terminal. Double-click both to run both apps.
+
+| File | Opens a server at |
+| --- | --- |
+| `Start Frontend.cmd` | `http://localhost:3000/` |
+| `Start Backend.cmd` | `http://localhost:8000/` with a public startup check at `/api/auth/csrf/` |
+
+The backend launcher uses the root `.env` through Docker Compose. Start Docker Desktop if PostgreSQL is stopped. The launcher starts the database service when its port is closed, verifies the Django connection, and starts the API. Install dependencies, apply migrations, and provision the roles using the setup commands below before using the launchers for the first time.
+
+Stop either server with `Ctrl+C` in its terminal.
+
 ## Windows PowerShell
 
 Start Docker Desktop and wait until its engine is running. From the repository root, create the local environment file once.

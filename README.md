@@ -23,6 +23,8 @@ The frontend defines a foundation landing page. The backend serves a role-protec
 
 Follow the [local setup guide](docs/development/setup.md) to install dependencies, start PostgreSQL and both applications, and run the checks.
 
+On Windows, double-click `Start Frontend.cmd` and `Start Backend.cmd` in the repository folder after completing the [one-time setup](docs/development/setup.md#windows-powershell).
+
 ## Roadmap and documentation
 
 See the [canonical roadmap](docs/tasks/roadmap.md) and [documentation index](docs/README.md).

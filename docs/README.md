@@ -4,6 +4,7 @@
 - [Support data model](architecture/data-model.md)
 - [Authentication and authorization](architecture/authentication.md)
 - [LLM integration architecture](architecture/llm-integration.md)
+- [Customer message classification](architecture/message-classification.md)
 - [API endpoints](api/endpoints.md)
 - [Local setup](development/setup.md), [conventions](development/conventions.md), [testing](development/testing.md), and [troubleshooting](development/troubleshooting.md)
 - [Fictional support sample data](development/sample-data.md)

@@ -4,17 +4,19 @@ The `ai` package provides a synchronous text client for future backend services.
 
 ```mermaid
 flowchart LR
-    Service["Future AI service"] -.-> Client["LLMClient protocol"]
+    Service["Customer message classifier"] --> Client["LLMClient protocol"]
     Client --> Adapter["OpenAI adapter"]
     Adapter -->|"Responses API via official SDK"| API["OpenAI"]
     API --> Adapter
     Adapter --> Result["LLMResponse, usage, or LLMError"]
-    Result -.-> Service
+    Result --> Service
     Tests["Tests"] --> Fake["FakeLLMClient"]
     Fake --> Result
 ```
 
 ## Client contract
+
+`CustomerMessageClassifier` is the first caller of the client protocol. It sends role-separated messages and parses the normalized text into the existing support taxonomy. The client still owns provider timeouts, retries, and error normalization. See the [classification architecture](message-classification.md).
 
 ```python
 from ai.client import get_llm_client

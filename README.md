@@ -10,7 +10,7 @@ The frontend defines a foundation landing page. The backend serves a role-protec
 | --- | --- | --- |
 | Frontend | Next.js App Router, React, TypeScript, Tailwind CSS, ESLint, Prettier, Vitest, React Testing Library | Agent inbox, draft review, Playwright |
 | Backend | Python, Django, Django REST Framework, session authentication, support roles, conversation and message APIs, PostgreSQL, fictional sample data, Ruff, Pytest, pytest-django | Background processing |
-| AI | Synchronous text client with the OpenAI Python SDK, mocked tests | Support workflows, structured output validation, evaluations |
+| AI | Synchronous OpenAI text client, seven-category message classifier, mocked tests | Sentiment and urgency analysis, drafting, structured output validation, evaluations |
 
 ## Repository
 
@@ -28,6 +28,8 @@ On Windows, double-click `Start Frontend.cmd` and `Start Backend.cmd` in the rep
 Populate a local database with the [fictional support dataset](docs/development/sample-data.md) to inspect the conversation API.
 
 The backend can validate the optional OpenAI configuration locally and has an opt-in live check. See the [LLM setup guide](docs/development/setup.md#configure-the-optional-llm-client).
+
+Use the [classification command](docs/development/setup.md#exercise-message-classification) to validate a fictional message locally or explicitly opt into a live request.
 
 ## Roadmap and documentation
 

@@ -2,18 +2,35 @@
 
 ## Overview
 
-- Overall progress is 5 of 40 tasks completed.
+- Overall progress is 6 of 40 tasks completed.
 - Current phase is Phase 2 — LLM Fundamentals.
-- Latest completed task is TASK-007 — Integrate the LLM API.
+- Latest completed task is TASK-008 — Implement Customer Message Classification.
 
 ## Task activity
 
 | Category | Tasks |
 | --- | --- |
-| Completed | TASK-003, TASK-004, TASK-005, TASK-006, and TASK-007 |
+| Completed | TASK-003 through TASK-008 |
 | In progress | None |
 | Partially completed | TASK-001 and TASK-002 |
 | Blocked | TASK-002 Docker health and persistence verification, TASK-001 Node.js 24 verification and fresh registry audit |
+
+## TASK-008 verification
+
+`CustomerMessageClassifier` uses the existing `LLMClient` and `classification-v1` prompt to return one of seven support categories from one message body. It strictly validates the JSON response and preserves provider metadata and errors. The command validates inputs locally by default. See the [classification architecture](../architecture/message-classification.md).
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Django system, PostgreSQL, and migration checks | `python manage.py check`, `python manage.py check_database`, `python manage.py makemigrations --check --dry-run` | Passed with LLM configuration unset. No migration changes detected. |
+| Local classification command | `python manage.py classify_message --text "Where is my order?"` | Passed. Validated the input and sent zero requests. |
+| AI suite | `python -m pytest ai/tests` | 178 passed. Includes 91 classification and 87 existing LLM cases. |
+| Database-free regression | `python -m pytest` | 273 passed, 267 skipped. |
+| PostgreSQL regression | `python -m pytest -m postgres --ds=config.postgres_test_settings` | 267 passed, 273 deselected. Verified isolated database teardown. |
+| Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
+| Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1, including 1 Vitest test. |
+| Live classification | `python manage.py classify_message --text "Where is my order?" --live` | Unverified. Billable request authorization was not provided. The command passed mocked tests. |
+
+Verified on 2026-11-25. Mocked cases cover the seven categories, role isolation, multilingual and overlapping requests, parse failures, and provider errors. Live accuracy and prompt-injection resistance remain unverified. The current classifier considers a single message and may need additional context for ambiguous cases.
 
 ## TASK-007 verification
 
@@ -161,4 +178,4 @@ Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adop
 
 ## Next planned task
 
-TASK-008 — Implement Customer Message Classification will use the reusable client to classify customer messages into the seven support categories. See the [canonical roadmap](roadmap.md).
+TASK-009 — Implement Sentiment and Urgency Analysis will use the existing LLM infrastructure to analyze customer emotion and issue priority. See the [canonical roadmap](roadmap.md).

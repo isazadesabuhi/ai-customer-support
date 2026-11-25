@@ -10,4 +10,6 @@ The `accounts/` app owns the login, logout, CSRF, and current-user endpoints. Ru
 
 The `ai/` package provides a synchronous text client and a Responses API adapter. Run `python manage.py check_llm` to validate optional environment configuration locally. See the [LLM integration guide](../docs/architecture/llm-integration.md).
 
+`CustomerMessageClassifier` uses the client to classify a single message. Its management command validates input offline by default. See the [classification guide](../docs/architecture/message-classification.md).
+
 Use Python 3.12–3.14. The [setup guide](../docs/development/setup.md) covers the virtual environment, Docker Compose, database credentials, migrations, server startup, and local API inspection. The [testing guide](../docs/development/testing.md) documents the database-free and opt-in PostgreSQL test suites.

@@ -90,3 +90,12 @@ Use these fields for future records.
 - **Alternatives Considered** Raw HTTP, an agent framework, and relying on the SDK default retry policy. Raw HTTP would duplicate request and response handling. The current scope is one text request, and the project needs explicit control of rate-limit waits and retry counts.
 - **Consequences** Application services can use the protocol independently of provider objects. The adapter owns role mapping, timeout policy, and output normalization. A timed-out call can still be billable, so retries remain bounded. See the [LLM integration architecture](../architecture/llm-integration.md).
 - **Date** 2026-11-25
+
+## ADR-010 · Classify one support message with validated JSON
+
+- **Status** Accepted
+- **Context** The backend needs one label from the existing support taxonomy for the intent of one customer message.
+- **Decision** Use the seven model category keys and prioritize the requested action or immediate obstacle. Put versioned instructions in a `developer` message and customer text in a `user` message. Request one JSON object, validate its exact shape, and return a typed result. Preserve `other` for a valid unclear or out-of-scope intent. Report invalid output as an error and leave retries for transient failures to the existing client. Keep the classification service free of queries and persistence.
+- **Alternatives Considered** Plain-text labels, provider-specific structured output, treating parse failures as `other`, and sending repair attempts automatically.
+- **Consequences** Classification behavior can be tested with deterministic clients independently of provider and database availability. Format failures stay visible. Production accuracy and injection resistance still need evaluation. Automatic repair could hide defects and add paid requests. See the [classification architecture](../architecture/message-classification.md).
+- **Date** 2026-11-25

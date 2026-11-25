@@ -12,7 +12,9 @@ flowchart TD
     API["Conversation and message API"]
     Support["Support models and migrations"]
     Database["PostgreSQL 17"]
-    AI["AI services (planned)"]
+    AI["Sentiment, urgency, drafting, and orchestration (planned)"]
+    Classifier["Customer message classifier"]
+    Classify["Opt-in classification management command"]
     LLM["LLM client and OpenAI adapter"]
     Check["Opt-in LLM management command"]
     Provider["OpenAI Responses API"]
@@ -25,10 +27,12 @@ flowchart TD
     Support --> Database
     Backend -.-> AI
     AI -.-> LLM
+    Classify --> Classifier
+    Classifier --> LLM
     Check --> LLM
     LLM --> Provider
 ```
 
 Keeping the two applications in one Git repository lets a future change to an API contract include the server, client, tests, and documentation in one review. See the [initial architecture decisions](../decisions/README.md).
 
-The reusable LLM adapter is available through the backend client interface and the explicit management command. See the [LLM integration architecture](llm-integration.md).
+The customer message classifier uses the reusable LLM adapter and is available through an explicit management command. See the [LLM integration architecture](llm-integration.md) and [classification architecture](message-classification.md).

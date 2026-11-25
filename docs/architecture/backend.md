@@ -46,7 +46,9 @@ The `accounts` app handles CSRF bootstrap, login, current-user profiles, and log
 
 ## LLM infrastructure
 
-The `ai` package provides a typed synchronous client, an OpenAI Responses adapter, and a fake client for tests. Services can accept the client protocol without importing OpenAI SDK types. Settings are read when a client is constructed. The management command validates configuration locally and supports an explicit live check. Classification, analysis, and drafting remain future service work. See the [LLM integration architecture](llm-integration.md).
+The `ai` package provides a typed synchronous client, an OpenAI Responses adapter, and a fake client for tests. Services can accept the client protocol without importing OpenAI SDK types. Settings are read when a client is constructed. The management command validates configuration locally and supports an explicit live check. See the [LLM integration architecture](llm-integration.md).
+
+`CustomerMessageClassifier` is the first AI business service. It sends one message through the client, validates the returned JSON against the seven support categories, and returns a typed result to its caller. The development command exercises it independently of HTTP and persistence. Sentiment, urgency, drafting, and orchestration remain scheduled work. See the [classification architecture](message-classification.md).
 
 ## Migrations
 

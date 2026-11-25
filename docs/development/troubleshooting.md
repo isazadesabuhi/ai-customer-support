@@ -16,6 +16,20 @@ Run `python manage.py check_llm` first to check the backend process environment 
 | Usage missing | Treat the token counts as unknown. A completed text response can still be usable. |
 | Unexpected SDK failure | Verify the pinned dependencies with `python -m pip check`. If reporting the failure, share the error category and model and keep credentials and prompt text private. |
 
+## Message classification failures
+
+| Symptom | What to check |
+| --- | --- |
+| Local check validated input without printing a category | The default command checks input. Use `--live` only when you have opted into a potentially billable request. |
+| Live command reports missing configuration | Load `OPENAI_API_KEY` and `OPENAI_MODEL` in the command's backend shell and run `check_llm` locally. |
+| Unsupported category or malformed JSON | The classifier rejected the response. Check the model and prompt version with a fictional test case. The parser requires two exact keys and one allowed category. |
+| Empty or incomplete output | The adapter can reject a response before classification parsing. Check the output budget for reasoning plus a short JSON object. |
+| Result is `other` | The message may lack a recognizable intent in isolation. Review the wording and available conversation context manually. |
+| Unsupported model setting | Use a model supported by the configured client, omit `temperature`, and keep the classifier's output limit within the backend setting. |
+| Provider rate limit or timeout | The underlying client handles eligible retries. Review the rate-limit or timeout guidance above before any new invocation. |
+
+See the [classification architecture](../architecture/message-classification.md) and [local command](setup.md#exercise-message-classification).
+
 | Symptom | Action |
 | --- | --- |
 | PowerShell blocks `Activate.ps1` | From `backend/`, run `.\.venv\Scripts\python.exe` directly for pip, Django, and Pytest. Use `.\.venv\Scripts\ruff.exe` for Ruff. |

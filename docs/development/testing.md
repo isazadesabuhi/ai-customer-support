@@ -49,4 +49,16 @@ Use `FakeLLMClient(LLMResponse("Ready", "fake", "test-model"))` when testing a f
 
 `python manage.py check_llm` validates the environment locally. `python manage.py check_llm --live` is a manual, potentially billable connectivity check for an explicitly authorized operator. It uses zero retries and accepts any usable completed text. Account access needs live verification. See the [configuration instructions](setup.md#configure-the-optional-llm-client).
 
+## Classification tests
+
+From `backend/`, run the classification tests with the virtual environment active.
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest ai/tests -k 'classification or classify_message'
+```
+
+`FakeLLMClient` supplies predetermined responses for the fictional seed cases and records the messages sent. Tests verify that the trusted prompt and original customer text occupy separate roles. The cases also cover Unicode, multilingual input, overlapping intents, prompt-like user content, strict JSON parsing, provider errors, and the absence of classification repair retries. They run without PostgreSQL, credentials, or outbound HTTP.
+
+Mocked outputs verify what the application accepts and rejects. Accuracy, model variability, and resistance to prompt injection require separate live evaluation. The optional local command validates inputs offline by default. Its explicitly opted-in live path is mocked in automated tests. See the [local command](setup.md#exercise-message-classification).
+
 Add Playwright for end-to-end flows once the frontend and API communicate.

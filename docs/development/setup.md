@@ -247,6 +247,24 @@ try {
 
 The default check validates syntax locally and confirms that no request was sent. When you have explicitly opted into a potentially billable request, run `.\.venv\Scripts\python.exe manage.py check_llm --live`. It sends a short fictional prompt with a cap of 64 output tokens and zero retries. Close the terminal or run `Remove-Item Env:OPENAI_API_KEY` when finished. See the [LLM testing guide](testing.md#llm-client-tests).
 
+## Exercise message classification
+
+From `backend/` with the usual Django environment loaded, run the local check. With an active virtual environment on macOS or Linux, replace the PowerShell executable with `python`.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py classify_message --text "Where is my order?"
+```
+
+The command validates the input for `classification-v1` and confirms that no model request was sent. This mode needs no OpenAI key and returns no category. The [classification tests](testing.md#classification-tests) exercise the full result contract with a deterministic client.
+
+For an explicitly authorized, potentially billable check, load the [LLM configuration](#configure-the-optional-llm-client) and append `--live`.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py classify_message --text "Where is my order?" --live
+```
+
+Use fictional text for CLI checks because command-line arguments can appear in shell history or process inspection. The live command sends one logical request, uses the configured provider's bounded retries, and prints the validated category and explanation with available metadata. It leaves the database untouched. See the [classification architecture](../architecture/message-classification.md).
+
 ## Verify the setup
 
 In `frontend/`, run `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run test:run`, and `npm run build`. Use `npm.cmd` in Windows PowerShell. Use `npm run format` when you intend to rewrite files.

@@ -1,3 +1,3 @@
-# Planned prompt documentation
+# Prompt versions
 
-When prompts are implemented, record their purpose, input fields, output expectations, and examples. Document how instructions are separated from untrusted customer text and how prompt changes are evaluated. This file contains scope guidance for future prompt work.
+`classification-v1` requests one category and a concise explanation for a single message. Its fixed instructions and examples use the `developer` role. The supplied message is a separate `user` input. Change the version when the classification policy or output contract changes. See the [source prompt](../../backend/ai/classification/prompts.py) and [classification architecture](../architecture/message-classification.md#prompt-and-input-contract).

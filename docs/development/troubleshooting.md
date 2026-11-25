@@ -1,5 +1,21 @@
 # Troubleshooting local setup
 
+## LLM configuration and provider errors
+
+Run `python manage.py check_llm` first to check the backend process environment locally. Use the backend virtual environment and load Django's normal local settings. See the [configuration guide](setup.md#configure-the-optional-llm-client).
+
+| Symptom | What to check |
+| --- | --- |
+| Missing key or model | Set `OPENAI_API_KEY` and `OPENAI_MODEL` in the shell that runs Django. Enter the key at a masked prompt. |
+| Credentials or access denied | Confirm the key is valid for the intended API project and that the project can use the model. |
+| Request or model rejected | Check the exact model identifier, Responses API support, and output-token limits. Omit `temperature` with this adapter. |
+| Rate limit or unavailable quota | Inspect the API project's rate limits and billing. Wait for the indicated limit to reset before trying again. |
+| Timeout | Check service availability and network conditions. Adjust `LLM_TIMEOUT_SECONDS` within its documented bounds when needed. A timeout can occur after the provider receives the request. |
+| Connection failure | Check DNS, firewall rules, proxy configuration, and TLS trust for `api.openai.com`. |
+| Empty or incomplete output | Check that the model supports text generation and that its output budget allows both reasoning and visible text. Use a short input for the live check. |
+| Usage missing | Treat the token counts as unknown. A completed text response can still be usable. |
+| Unexpected SDK failure | Verify the pinned dependencies with `python -m pip check`. If reporting the failure, share the error category and model and keep credentials and prompt text private. |
+
 | Symptom | Action |
 | --- | --- |
 | PowerShell blocks `Activate.ps1` | From `backend/`, run `.\.venv\Scripts\python.exe` directly for pip, Django, and Pytest. Use `.\.venv\Scripts\ruff.exe` for Ruff. |

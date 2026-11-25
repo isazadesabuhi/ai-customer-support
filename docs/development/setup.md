@@ -215,6 +215,38 @@ The [root environment example](../../.env.example) lists database variables. The
 
 Pytest defaults to database-free test settings with a test-only signing key. With PostgreSQL ready and the database variables loaded, run `python -m pytest -m postgres --ds=config.postgres_test_settings` from `backend/` to verify the isolated test database. Use the virtual environment's executable on Windows. See the [testing guide](testing.md).
 
+## Configure the optional LLM client
+
+Update backend dependencies from `backend/` using `python -m pip install -r requirements/dev.txt` with the virtual environment active. On Windows, use `.\.venv\Scripts\python.exe` in place of `python` if the environment is inactive. The project pins the official OpenAI Python SDK at 2.53.0. Django, PostgreSQL commands, migrations, and the mocked tests run without an API key.
+
+| Variable | Value |
+| --- | --- |
+| `LLM_PROVIDER` | Defaults to `openai`, the implemented provider. |
+| `OPENAI_API_KEY` | Required when validating or constructing a live client. Keep it in the backend process environment. |
+| `OPENAI_MODEL` | Required explicit text model with Responses API support. Choose a model your API project can access. |
+| `LLM_TIMEOUT_SECONDS` | Defaults to `30`. Greater than zero through 120, applied to each HTTP attempt's timeout phases. |
+| `LLM_MAX_RETRIES` | Defaults to `2`. Accepts 0 through 3 additional attempts on eligible failures. |
+| `LLM_MAX_OUTPUT_TOKENS` | Defaults to `500`. Sets the default and ceiling for requests. Accepts 16 through 4096. |
+
+Load the usual Django development environment first. From `backend/` in PowerShell, enter your development API key at the masked prompt. The example model is GPT-6 Luna. Confirm access in your API project or set `OPENAI_MODEL` to another supported text model. Keep the key out of shell history and frontend configuration. [OpenAI quickstart](https://developers.openai.com/api/docs/quickstart) · [GPT-6 Luna model documentation](https://developers.openai.com/api/docs/models/gpt-6-luna)
+
+```powershell
+$env:LLM_PROVIDER = 'openai'
+$env:OPENAI_MODEL = 'gpt-6-luna'
+$env:LLM_TIMEOUT_SECONDS = '30'
+$env:LLM_MAX_RETRIES = '2'
+$env:LLM_MAX_OUTPUT_TOKENS = '500'
+$llmSecret = Read-Host 'Enter your OpenAI development API key' -AsSecureString
+try {
+    $env:OPENAI_API_KEY = [System.Net.NetworkCredential]::new('', $llmSecret).Password
+} finally {
+    $llmSecret.Dispose()
+}
+.\.venv\Scripts\python.exe manage.py check_llm
+```
+
+The default check validates syntax locally and confirms that no request was sent. When you have explicitly opted into a potentially billable request, run `.\.venv\Scripts\python.exe manage.py check_llm --live`. It sends a short fictional prompt with a cap of 64 output tokens and zero retries. Close the terminal or run `Remove-Item Env:OPENAI_API_KEY` when finished. See the [LLM testing guide](testing.md#llm-client-tests).
+
 ## Verify the setup
 
 In `frontend/`, run `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run test:run`, and `npm run build`. Use `npm.cmd` in Windows PowerShell. Use `npm run format` when you intend to rewrite files.

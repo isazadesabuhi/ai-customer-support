@@ -41,4 +41,12 @@ Run these commands from `backend/` with the virtual environment active. The firs
 
 The PostgreSQL tests verify deterministic timestamps and identity, idempotency, conflicts, dry-run SQL, rollback after failed inserts or deletes, and refusal to cascade into manually added records. They run in the dedicated pytest database. Authenticated API cases use the existing Agent and Manager roles and check filters, pagination, details, and message ordering. Anonymous and unassigned requests must still be rejected. See the [sample data reference](sample-data.md).
 
-Future tests should mock external API requests at the service boundary and exercise both successful and failed responses. Add Playwright for end-to-end flows once the frontend and API communicate.
+## LLM client tests
+
+Run `python -m pytest ai/tests` from `backend/` with the virtual environment active. Provider tests use the real SDK with `httpx.MockTransport`. They cover the rendered request body, timeout settings, response parsing, error mapping, and bounded retry schedules. A transport guard fails tests that try to use the standard HTTP transport. Retry tests inject a recorder so there is no sleep or network traffic.
+
+Use `FakeLLMClient(LLMResponse("Ready", "fake", "test-model"))` when testing a future service that accepts the `LLMClient` protocol. Inspect `fake.calls` to check the messages and parameters. Supply a normalized error to exercise a failure path. The fake can also return empty text or missing usage so callers can test their own handling. The command tests inject the fake for `--live` and verify that default mode creates no client.
+
+`python manage.py check_llm` validates the environment locally. `python manage.py check_llm --live` is a manual, potentially billable connectivity check for an explicitly authorized operator. It uses zero retries and accepts any usable completed text. Account access needs live verification. See the [configuration instructions](setup.md#configure-the-optional-llm-client).
+
+Add Playwright for end-to-end flows once the frontend and API communicate.

@@ -12,6 +12,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "config",
+    "ai",
     "accounts.apps.AccountsConfig",
     "support.apps.SupportConfig",
 ]

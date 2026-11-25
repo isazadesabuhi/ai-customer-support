@@ -9,8 +9,8 @@ The frontend defines a foundation landing page. The backend serves a role-protec
 | Area | In the repository | Planned |
 | --- | --- | --- |
 | Frontend | Next.js App Router, React, TypeScript, Tailwind CSS, ESLint, Prettier, Vitest, React Testing Library | Agent inbox, draft review, Playwright |
-| Backend | Python, Django, Django REST Framework, session authentication, support roles, conversation and message APIs, PostgreSQL, fictional sample data, Ruff, Pytest, pytest-django | AI integration |
-| AI | Workflow documentation | OpenAI Python SDK, Pydantic validation, evaluations |
+| Backend | Python, Django, Django REST Framework, session authentication, support roles, conversation and message APIs, PostgreSQL, fictional sample data, Ruff, Pytest, pytest-django | Background processing |
+| AI | Synchronous text client with the OpenAI Python SDK, mocked tests | Support workflows, structured output validation, evaluations |
 
 ## Repository
 
@@ -26,6 +26,8 @@ Follow the [local setup guide](docs/development/setup.md) to install dependencie
 On Windows, double-click `Start Frontend.cmd` and `Start Backend.cmd` in the repository folder after completing the [one-time setup](docs/development/setup.md#windows-powershell).
 
 Populate a local database with the [fictional support dataset](docs/development/sample-data.md) to inspect the conversation API.
+
+The backend can validate the optional OpenAI configuration locally and has an opt-in live check. See the [LLM setup guide](docs/development/setup.md#configure-the-optional-llm-client).
 
 ## Roadmap and documentation
 

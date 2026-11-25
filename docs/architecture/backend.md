@@ -44,6 +44,10 @@ The conversation queryset joins `customer` with `select_related()` and applies a
 
 The `accounts` app handles CSRF bootstrap, login, current-user profiles, and logout under `/api/auth/`. Django's existing authentication backend verifies usernames and hashed passwords. Django stores sessions in PostgreSQL and sends an HttpOnly session cookie. The app resolves the Support Agent and Support Manager roles from Django groups. The `support` app consumes these roles and the operation-specific model grants. See the [authentication architecture](authentication.md) for the session lifecycle, role matrix, and browser security policy.
 
+## LLM infrastructure
+
+The `ai` package provides a typed synchronous client, an OpenAI Responses adapter, and a fake client for tests. Services can accept the client protocol without importing OpenAI SDK types. Settings are read when a client is constructed. The management command validates configuration locally and supports an explicit live check. Classification, analysis, and drafting remain future service work. See the [LLM integration architecture](llm-integration.md).
+
 ## Migrations
 
 `makemigrations` generates versioned migration files from model changes. `migrate` applies existing migration operations and tracks them in the target database's `django_migrations` table. `showmigrations` displays that history. Review and version migration files because schema changes can lock tables or require compatible application deployments. The support app's initial migration adds its tables alongside the existing Django framework tables.

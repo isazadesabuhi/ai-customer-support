@@ -2,18 +2,34 @@
 
 ## Overview
 
-- Overall progress is 4 of 40 tasks completed.
-- Current phase is Phase 1 — Foundation.
-- Latest completed task is TASK-006 — Create Sample Customer Support Data.
+- Overall progress is 5 of 40 tasks completed.
+- Current phase is Phase 2 — LLM Fundamentals.
+- Latest completed task is TASK-007 — Integrate the LLM API.
 
 ## Task activity
 
 | Category | Tasks |
 | --- | --- |
-| Completed | TASK-003, TASK-004, TASK-005, and TASK-006 |
+| Completed | TASK-003, TASK-004, TASK-005, TASK-006, and TASK-007 |
 | In progress | None |
 | Partially completed | TASK-001 and TASK-002 |
 | Blocked | TASK-002 Docker health and persistence verification, TASK-001 Node.js 24 verification and fresh registry audit |
+
+## TASK-007 verification
+
+The `ai` package contains a synchronous provider-independent text client, the OpenAI Responses adapter, a reusable fake, and the `check_llm` management command. The adapter normalizes text, model, usage, and request ID metadata. It applies configurable HTTP timeouts and one bounded retry policy. See the [LLM integration architecture](../architecture/llm-integration.md).
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Django, PostgreSQL, and migration checks | `python manage.py check`, `python manage.py check_database`, `python manage.py makemigrations --check --dry-run` | Passed with the LLM key and model unset. No migration changes detected. |
+| Local LLM configuration | `python manage.py check_llm` | Correctly refused a missing key. Passed with test-only configuration and confirmed zero requests. |
+| Database-free suite | `python -m pytest` | 182 passed, 267 skipped. Includes 87 LLM tests. Provider tests use the real SDK with mocked HTTP transport. |
+| PostgreSQL regressions | `python -m pytest -m postgres --ds=config.postgres_test_settings` | 267 passed, 182 deselected. Verified isolated database teardown. |
+| Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. OpenAI SDK 2.53.0 installed from a cached wheel verified against PyPI's SHA-256. |
+| Frontend regressions | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1, including 1 Vitest test. |
+| Paid live check | `python manage.py check_llm --live` | Unverified. Billable request authorization was not provided. The command passed mocked tests. |
+
+Verified on 2026-11-25. The model is explicit per environment. Project access, live performance, and usage remain unverified. The adapter accepts text and uses model-default sampling. Retried generation may incur extra charges, and the live command uses zero retries. Earlier task statuses were preserved.
 
 ## TASK-006 verification
 
@@ -145,4 +161,4 @@ Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adop
 
 ## Next planned task
 
-TASK-007 — Integrate an LLM API will introduce a configurable provider, credentials, request and response handling, error handling, and mocked tests. See the [canonical roadmap](roadmap.md).
+TASK-008 — Implement Customer Message Classification will use the reusable client to classify customer messages into the seven support categories. See the [canonical roadmap](roadmap.md).

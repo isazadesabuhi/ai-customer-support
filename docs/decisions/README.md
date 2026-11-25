@@ -81,3 +81,12 @@ Use these fields for future records.
 - **Alternatives Considered** JSON fixtures with fixed IDs, email suffix matching, and a database ownership flag.
 - **Consequences** IDs and timestamps stay reproducible without a schema change. Cleanup can refuse ordinary edits or new child records. Changes to a published inventory require care with local databases seeded by the older version. See the [sample data reference](../development/sample-data.md).
 - **Date** 2026-11-24
+
+## ADR-009 · Use a synchronous provider adapter for LLM text requests
+
+- **Status** Accepted
+- **Context** Planned AI features need a shared text client with explicit failure, usage, and cost behavior.
+- **Decision** Use the official OpenAI Python SDK and Responses API behind a typed `LLMClient` protocol. Keep configuration lazy, require an explicit model, and return normalized results and sanitized errors. Use one bounded retry layer, with SDK retries disabled. Inject deterministic clients into tests and use mocked HTTP transport to verify the SDK interaction. Keep the real smoke check opt-in with zero retries and a small output cap.
+- **Alternatives Considered** Raw HTTP, an agent framework, and relying on the SDK default retry policy. Raw HTTP would duplicate request and response handling. The current scope is one text request, and the project needs explicit control of rate-limit waits and retry counts.
+- **Consequences** Application services can use the protocol independently of provider objects. The adapter owns role mapping, timeout policy, and output normalization. A timed-out call can still be billable, so retries remain bounded. See the [LLM integration architecture](../architecture/llm-integration.md).
+- **Date** 2026-11-25

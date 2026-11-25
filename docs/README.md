@@ -3,6 +3,7 @@
 - [Architecture overview](architecture/overview.md), [frontend](architecture/frontend.md), [backend](architecture/backend.md), and [planned AI workflow](architecture/ai-pipeline.md)
 - [Support data model](architecture/data-model.md)
 - [Authentication and authorization](architecture/authentication.md)
+- [LLM integration architecture](architecture/llm-integration.md)
 - [API endpoints](api/endpoints.md)
 - [Local setup](development/setup.md), [conventions](development/conventions.md), [testing](development/testing.md), and [troubleshooting](development/troubleshooting.md)
 - [Fictional support sample data](development/sample-data.md)

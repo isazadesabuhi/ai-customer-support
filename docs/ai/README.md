@@ -1,6 +1,6 @@
 # AI engineering notes
 
-These notes describe planned work on the [roadmap](../tasks/roadmap.md). TASK-001 uses no model provider or AI credentials.
+The reusable OpenAI client is implemented. Future tasks will use it for support-specific workflows. See the [LLM integration architecture](../architecture/llm-integration.md) and the [roadmap](../tasks/roadmap.md).
 
 - **LLM integration** connects backend code to a provider API and handles request and service failures.
 - **Prompt engineering** shapes the instructions, context, and examples a model receives.

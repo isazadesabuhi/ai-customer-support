@@ -61,4 +61,16 @@ From `backend/`, run the classification tests with the virtual environment activ
 
 Mocked outputs verify what the application accepts and rejects. Accuracy, model variability, and resistance to prompt injection require separate live evaluation. The optional local command validates inputs offline by default. Its explicitly opted-in live path is mocked in automated tests. See the [local command](setup.md#exercise-message-classification).
 
+## Sentiment and urgency tests
+
+From `backend/`, run the new service and command tests with the virtual environment active.
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest ai/tests -k sentiment_urgency
+```
+
+The parser cases cover all nine sentiment and urgency combinations, exact keys and enums, independent explanation validation, and duplicate or malformed JSON. The service cases inject `FakeLLMClient` to check original-text handling, metadata, and one logical call. Tests simulate authentication, rate-limit, timeout, connection, invalid-request, and provider errors. Prompt tests check that instruction-like customer text stays in the `user` role. These tests require no network, API key, or database connection.
+
+The offline command checks input without constructing a provider client. Automated tests also exercise the live command path with a fake. Any manual live check requires explicit opt-in and may incur charges. Fake tests establish the application contract. Live accuracy and injection resistance require separate evaluation. See the [local command](setup.md#exercise-sentiment-and-urgency-analysis).
+
 Add Playwright for end-to-end flows once the frontend and API communicate.

@@ -265,6 +265,22 @@ For an explicitly authorized, potentially billable check, load the [LLM configur
 
 Use fictional text for CLI checks because command-line arguments can appear in shell history or process inspection. The live command sends one logical request, uses the configured provider's bounded retries, and prints the validated category and explanation with available metadata. It leaves the database untouched. See the [classification architecture](../architecture/message-classification.md).
 
+## Exercise sentiment and urgency analysis
+
+From `backend/` with the usual Django environment loaded, run the offline check. On macOS or Linux with an active virtual environment, use `python` in place of the PowerShell executable.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py analyze_sentiment --text "I need my replacement before tomorrow."
+```
+
+The command validates input for `sentiment-urgency-v1`, sends no request, and needs no OpenAI credentials. To opt into a potentially billable check, first load the [LLM configuration](#configure-the-optional-llm-client), then append `--live`.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py analyze_sentiment --text "I need my replacement before tomorrow." --live
+```
+
+Use fictional text because command-line arguments can appear in shell history or process inspection. Live mode prints both validated labels, their explanations, and available provider metadata. It sends one logical request with the configured client's bounded retries and performs no database writes. See the [sentiment and urgency architecture](../architecture/sentiment-urgency.md).
+
 ## Verify the setup
 
 In `frontend/`, run `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run test:run`, and `npm run build`. Use `npm.cmd` in Windows PowerShell. Use `npm run format` when you intend to rewrite files.

@@ -5,6 +5,7 @@
 - Overall progress is 6 of 40 tasks completed.
 - Current phase is Phase 2 — LLM Fundamentals.
 - Latest completed task is TASK-008 — Implement Customer Message Classification.
+- TASK-009 implementation is in place. PostgreSQL verification is pending.
 
 ## Task activity
 
@@ -12,8 +13,27 @@
 | --- | --- |
 | Completed | TASK-003 through TASK-008 |
 | In progress | None |
-| Partially completed | TASK-001 and TASK-002 |
+| Partially completed | TASK-001, TASK-002, and TASK-009 |
 | Blocked | TASK-002 Docker health and persistence verification, TASK-001 Node.js 24 verification and fresh registry audit |
+
+## TASK-009 verification
+
+`SentimentUrgencyAnalyzer` sends one role-separated `LLMClient` request and returns independent sentiment and urgency labels, two concise explanations, and available provider metadata. The `sentiment-urgency-v1` prompt and strict parser use the existing domain enums. See the [analysis architecture](../architecture/sentiment-urgency.md).
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Django system check | `python manage.py check` | Passed with LLM configuration unset. |
+| PostgreSQL connectivity | `python manage.py check_database` | Failed because the local PostgreSQL service was unavailable. Docker's engine pipe was missing after a startup attempt. |
+| Migration synchronization | `python manage.py makemigrations --check --dry-run` | No changes detected with development and test settings. The development database history check timed out. |
+| Offline analysis command | `python manage.py analyze_sentiment --text "I need my replacement before tomorrow."` | Passed with LLM configuration unset. Input was validated and zero provider requests were sent. |
+| AI suite | `python -m pytest ai/tests` | 291 passed, including 113 new analysis cases and 178 existing AI cases. |
+| Database-free regression | `python -m pytest` | 386 passed, 267 PostgreSQL cases skipped. |
+| PostgreSQL regression | `python -m pytest -m postgres --ds=config.postgres_test_settings` | The collection-only check selected 267 tests and deselected 386. Execution was blocked by the local database connection preflight. |
+| Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
+| Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1, including 1 Vitest test. |
+| Live analysis | `python manage.py analyze_sentiment --text "I need my replacement before tomorrow." --live` | Unverified. Billable request authorization was not provided. The command passed mocked tests. |
+
+Verified on 2026-11-26. The implementation and database-free checks are complete. TASK-009 completion requires a successful PostgreSQL regression run. Live accuracy and injection resistance remain evaluation work.
 
 ## TASK-008 verification
 
@@ -178,4 +198,4 @@ Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adop
 
 ## Next planned task
 
-TASK-009 — Implement Sentiment and Urgency Analysis will use the existing LLM infrastructure to analyze customer emotion and issue priority. See the [canonical roadmap](roadmap.md).
+After TASK-009 verification, TASK-010 — Structured AI Output Validation will build shared schema validation on the classification and sentiment/urgency services. See the [canonical roadmap](roadmap.md).

@@ -1,6 +1,6 @@
 # AI engineering notes
 
-The reusable OpenAI client and customer message classifier are implemented. See the [LLM integration architecture](../architecture/llm-integration.md), [classification architecture](../architecture/message-classification.md), and [roadmap](../tasks/roadmap.md).
+The reusable OpenAI client, customer message classifier, and sentiment and urgency analyzer are implemented. See the [LLM integration architecture](../architecture/llm-integration.md), [classification architecture](../architecture/message-classification.md), [sentiment and urgency architecture](../architecture/sentiment-urgency.md), and [roadmap](../tasks/roadmap.md).
 
 - **LLM integration** connects backend code to a provider API and handles request and service failures.
 - **Prompt engineering** shapes the instructions, context, and examples a model receives.

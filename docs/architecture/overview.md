@@ -12,9 +12,11 @@ flowchart TD
     API["Conversation and message API"]
     Support["Support models and migrations"]
     Database["PostgreSQL 17"]
-    AI["Sentiment, urgency, drafting, and orchestration (planned)"]
+    AI["Response generation and orchestration (planned)"]
     Classifier["Customer message classifier"]
     Classify["Opt-in classification management command"]
+    Analyzer["Sentiment and urgency analyzer"]
+    Analyze["Opt-in analysis management command"]
     LLM["LLM client and OpenAI adapter"]
     Check["Opt-in LLM management command"]
     Provider["OpenAI Responses API"]
@@ -29,10 +31,12 @@ flowchart TD
     AI -.-> LLM
     Classify --> Classifier
     Classifier --> LLM
+    Analyze --> Analyzer
+    Analyzer --> LLM
     Check --> LLM
     LLM --> Provider
 ```
 
 Keeping the two applications in one Git repository lets a future change to an API contract include the server, client, tests, and documentation in one review. See the [initial architecture decisions](../decisions/README.md).
 
-The customer message classifier uses the reusable LLM adapter and is available through an explicit management command. See the [LLM integration architecture](llm-integration.md) and [classification architecture](message-classification.md).
+The classifier and the sentiment and urgency analyzer use the same LLM client and have independent management commands. See the [LLM integration architecture](llm-integration.md), [classification architecture](message-classification.md), and [sentiment and urgency architecture](sentiment-urgency.md).

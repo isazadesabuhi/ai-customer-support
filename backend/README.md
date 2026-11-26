@@ -12,4 +12,6 @@ The `ai/` package provides a synchronous text client and a Responses API adapter
 
 `CustomerMessageClassifier` uses the client to classify a single message. Its management command validates input offline by default. See the [classification guide](../docs/architecture/message-classification.md).
 
+`SentimentUrgencyAnalyzer` uses the same client to assess the expressed attitude and time sensitivity of a single message. Its `analyze_sentiment` command defaults to offline validation. See the [analysis guide](../docs/architecture/sentiment-urgency.md).
+
 Use Python 3.12–3.14. The [setup guide](../docs/development/setup.md) covers the virtual environment, Docker Compose, database credentials, migrations, server startup, and local API inspection. The [testing guide](../docs/development/testing.md) documents the database-free and opt-in PostgreSQL test suites.

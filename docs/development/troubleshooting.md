@@ -30,6 +30,19 @@ Run `python manage.py check_llm` first to check the backend process environment 
 
 See the [classification architecture](../architecture/message-classification.md) and [local command](setup.md#exercise-message-classification).
 
+## Sentiment and urgency analysis failures
+
+| Symptom | What to check |
+| --- | --- |
+| Offline mode prints a validation result only | Offline mode validates the supplied message. A real prediction requires explicit `--live` opt-in. |
+| Missing provider configuration or unsupported model | Load the backend key and model, run `check_llm` locally, and verify the model is available to the API project. |
+| Empty or incomplete response | Check that the configured output limit can accommodate model reasoning and all four visible JSON fields. |
+| Invalid JSON or unsupported sentiment or urgency | The response violated the analysis contract. Review the prompt version and model with a fictional example. A validation failure remains an error. |
+| Provider rate limit or timeout | Check provider limits or network conditions. The client already retries eligible failures within its configured limits. |
+| Ambiguous tone or timing | Review the message and any available conversation context manually. The analyzer sees one message body. |
+
+See the [analysis contract](../architecture/sentiment-urgency.md) and [local command](setup.md#exercise-sentiment-and-urgency-analysis).
+
 | Symptom | Action |
 | --- | --- |
 | PowerShell blocks `Activate.ps1` | From `backend/`, run `.\.venv\Scripts\python.exe` directly for pip, Django, and Pytest. Use `.\.venv\Scripts\ruff.exe` for Ruff. |

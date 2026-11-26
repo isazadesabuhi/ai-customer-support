@@ -99,3 +99,12 @@ Use these fields for future records.
 - **Alternatives Considered** Plain-text labels, provider-specific structured output, treating parse failures as `other`, and sending repair attempts automatically.
 - **Consequences** Classification behavior can be tested with deterministic clients independently of provider and database availability. Format failures stay visible. Production accuracy and injection resistance still need evaluation. Automatic repair could hide defects and add paid requests. See the [classification architecture](../architecture/message-classification.md).
 - **Date** 2026-11-25
+
+## ADR-011 · Analyze sentiment and urgency independently in one request
+
+- **Status** Accepted
+- **Context** The way someone describes an issue and the consequences of waiting answer different support questions, even when both can be assessed from the same message.
+- **Decision** Use the existing model enums and a versioned prompt with separate evidence criteria for sentiment and urgency. Send one request through `LLMClient`. Validate the four exact JSON fields and return an advisory result. Report format and label errors directly, keeping `neutral` and `normal` as valid analysis decisions. Keep the analyzer independent of classification, persistence, and orchestration.
+- **Alternatives Considered** Two separate requests for tone and urgency, an inferred priority based on sentiment, schema repair requests, and combining these outputs with intent classification now.
+- **Consequences** One call avoids sending the same text twice and retains the existing provider retry limits. Independent fields can express polite deadlines and non-urgent frustration. Structured validity is checked locally, and model accuracy and injection resistance remain evaluation work. See the [sentiment and urgency architecture](../architecture/sentiment-urgency.md).
+- **Date** 2026-11-26

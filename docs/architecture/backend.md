@@ -48,7 +48,7 @@ The `accounts` app handles CSRF bootstrap, login, current-user profiles, and log
 
 The `ai` package provides a typed synchronous client, an OpenAI Responses adapter, and a fake client for tests. Services can accept the client protocol without importing OpenAI SDK types. Settings are read when a client is constructed. The management command validates configuration locally and supports an explicit live check. See the [LLM integration architecture](llm-integration.md).
 
-`CustomerMessageClassifier` is the first AI business service. It sends one message through the client, validates the returned JSON against the seven support categories, and returns a typed result to its caller. The development command exercises it independently of HTTP and persistence. Sentiment, urgency, drafting, and orchestration remain scheduled work. See the [classification architecture](message-classification.md).
+`CustomerMessageClassifier` returns an intent category from the seven support categories. `SentimentUrgencyAnalyzer` returns independently judged sentiment and urgency for the same kind of single-message input. Both use the shared client, validate their own JSON output, and return typed results without involving HTTP or persistence. Their development commands default to offline validation. Drafting and orchestration remain scheduled work. See the [classification architecture](message-classification.md) and [sentiment and urgency architecture](sentiment-urgency.md).
 
 ## Migrations
 

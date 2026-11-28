@@ -48,9 +48,11 @@ The `accounts` app handles CSRF bootstrap, login, current-user profiles, and log
 
 The `ai` package provides a typed synchronous client, an OpenAI Responses adapter, and a fake client for tests. Services can accept the client protocol without importing OpenAI SDK types. Settings are read when a client is constructed. The management command validates configuration locally and supports an explicit live check. See the [LLM integration architecture](llm-integration.md).
 
-`CustomerMessageClassifier` returns an intent category from the seven support categories. `SentimentUrgencyAnalyzer` returns independently judged sentiment and urgency for the same kind of single-message input. Both use the shared client, validate their own JSON output, and return typed results without involving HTTP or persistence. Their development commands default to offline validation. Drafting and orchestration remain scheduled work. See the [classification architecture](message-classification.md) and [sentiment and urgency architecture](sentiment-urgency.md).
+`CustomerMessageClassifier` returns one of seven intent categories. `SentimentUrgencyAnalyzer` returns independent sentiment and urgency judgments. Each uses the shared client to analyze a single support message. See the [classification architecture](message-classification.md) and [sentiment and urgency architecture](sentiment-urgency.md).
 
-`ai.structured_output` centralizes bounded JSON parsing and shared field, enum, and explanation checks. Classification and sentiment/urgency supply their separate schemas and translate validation errors into their established public exceptions. See the [structured-output validation architecture](structured-output-validation.md).
+`CustomerResponseDraftGenerator` accepts one message, controlled language and tone settings, and optional caller-supplied business facts. It returns a typed draft in memory with a code-controlled human-review requirement. The three service commands default to offline validation. See the [draft generation architecture](draft-generation.md).
+
+`ai.structured_output` centralizes bounded JSON parsing and shared field, enum, and text checks. Each AI service defines its own schema and maps validation failures to its own output error. See the [structured-output validation architecture](structured-output-validation.md).
 
 ## Migrations
 

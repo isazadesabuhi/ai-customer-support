@@ -281,6 +281,25 @@ The command validates input for `sentiment-urgency-v1`, sends no request, and ne
 
 Use fictional text because command-line arguments can appear in shell history or process inspection. Live mode prints both validated labels, their explanations, and available provider metadata. It sends one logical request with the configured client's bounded retries and performs no database writes. See the [sentiment and urgency architecture](../architecture/sentiment-urgency.md).
 
+## Exercise draft generation
+
+From `backend/` with the development environment loaded, validate a fictional draft request in PowerShell.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py generate_draft --text "Where is my order?"
+.\.venv\Scripts\python.exe manage.py generate_draft --text "Where is my order?" --language fr --tone friendly --context "Verified status: shipped. No delivery date is available."
+```
+
+The command defaults to English (`en`) and a `professional` tone. Use `fr` for French and `friendly` or `empathetic` to change the tone. Supply `--context` only for business facts that you have verified. Offline mode validates the inputs without OpenAI credentials and reports that no draft was generated.
+
+For an explicitly authorized live request, load [LLM configuration](#configure-the-optional-llm-client) and append `--live`. The request may incur charges.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py generate_draft --text "Where is my order?" --language fr --tone friendly --live
+```
+
+Use fictional text and facts for manual testing. Command-line arguments can appear in process inspection and shell history. Live mode prints a human-review notice and a JSON result with the draft, missing details, and available provider metadata. Treat the result as a draft that an agent must verify. See the [draft generation architecture](../architecture/draft-generation.md).
+
 ## Verify the setup
 
 In `frontend/`, run `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run test:run`, and `npm run build`. Use `npm.cmd` in Windows PowerShell. Use `npm run format` when you intend to rewrite files.

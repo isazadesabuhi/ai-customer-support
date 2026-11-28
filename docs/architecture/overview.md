@@ -12,11 +12,15 @@ flowchart TD
     API["Conversation and message API"]
     Support["Support models and migrations"]
     Database["PostgreSQL 17"]
-    AI["Response generation and orchestration (planned)"]
+    Workflow["AI orchestration (planned)"]
+    Safety["Draft safety and quality checks (planned)"]
     Classifier["Customer message classifier"]
     Classify["Opt-in classification management command"]
     Analyzer["Sentiment and urgency analyzer"]
     Analyze["Opt-in analysis management command"]
+    Draft["Customer response draft generator"]
+    Generate["Opt-in draft management command"]
+    Review["In-memory draft for human review"]
     Validation["Shared structured-output validation"]
     LLM["LLM client and OpenAI adapter"]
     Check["Opt-in LLM management command"]
@@ -28,18 +32,25 @@ flowchart TD
     Accounts --> Database
     API --> Support
     Support --> Database
-    Backend -.-> AI
-    AI -.-> LLM
+    Backend -.-> Workflow
+    Workflow -.-> Classifier
+    Workflow -.-> Analyzer
+    Workflow -.-> Draft
     Classify --> Classifier
     Classifier --> LLM
     Classifier --> Validation
     Analyze --> Analyzer
     Analyzer --> LLM
     Analyzer --> Validation
+    Generate --> Draft
+    Draft --> LLM
+    Draft --> Validation
+    Draft --> Review
+    Review -.-> Safety
     Check --> LLM
     LLM --> Provider
 ```
 
 Keeping the two applications in one Git repository lets a future change to an API contract include the server, client, tests, and documentation in one review. See the [initial architecture decisions](../decisions/README.md).
 
-The classifier and the sentiment and urgency analyzer use the same LLM client and validation layer and have independent management commands. See the [LLM integration architecture](llm-integration.md), [structured-output validation](structured-output-validation.md), [classification architecture](message-classification.md), and [sentiment and urgency architecture](sentiment-urgency.md).
+Classification, sentiment and urgency analysis, and draft generation use the same LLM client and validation layer and have independent management commands. See the [LLM integration architecture](llm-integration.md), [structured-output validation](structured-output-validation.md), [classification architecture](message-classification.md), [sentiment and urgency architecture](sentiment-urgency.md), and [draft generation architecture](draft-generation.md).

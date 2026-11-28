@@ -7,6 +7,7 @@
 - [Customer message classification](architecture/message-classification.md)
 - [Customer sentiment and urgency](architecture/sentiment-urgency.md)
 - [Structured AI output validation](architecture/structured-output-validation.md)
+- [AI draft response generation](architecture/draft-generation.md)
 - [API endpoints](api/endpoints.md)
 - [Local setup](development/setup.md), [conventions](development/conventions.md), [testing](development/testing.md), and [troubleshooting](development/troubleshooting.md)
 - [Fictional support sample data](development/sample-data.md)

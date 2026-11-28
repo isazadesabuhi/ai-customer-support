@@ -1,6 +1,6 @@
 # LLM integration
 
-The `ai` package provides a synchronous text client for future backend services. The official OpenAI SDK sends JSON requests to `/v1/responses` and parses the provider's response. The adapter accepts project-owned types and returns project-owned types. Django discovers `check_llm` through the app registry. The application creates a client only when a caller explicitly requests one.
+The `ai` package provides a synchronous text client for backend AI services. The official OpenAI SDK sends JSON requests to `/v1/responses` and parses the provider's response. The adapter accepts project-owned types and returns project-owned types. Django discovers `check_llm` through the app registry. The application creates a client only when a caller explicitly requests one.
 
 ```mermaid
 flowchart LR
@@ -18,7 +18,7 @@ flowchart LR
 
 ## Client contract
 
-`CustomerMessageClassifier` and `SentimentUrgencyAnalyzer` call the same protocol independently. The client normalizes provider responses into text and metadata and owns timeouts, retries, and provider errors. The shared structured-output layer decodes that text and checks its shape and values. Each service supplies its own field names and domain choices, then constructs its typed result or raises its public output error. See the [shared validation architecture](structured-output-validation.md), [classification architecture](message-classification.md), and [sentiment and urgency architecture](sentiment-urgency.md).
+Classification, sentiment and urgency analysis, and draft generation call the same protocol independently. The client normalizes provider responses into text and metadata and owns timeouts, retries, and provider errors. Shared structured-output helpers decode the text and apply field and value rules. Each service defines its own result schema. Draft generation checks its missing-information fields together and requires human review. See the [shared validation architecture](structured-output-validation.md), [classification architecture](message-classification.md), [sentiment and urgency architecture](sentiment-urgency.md), and [draft generation architecture](draft-generation.md).
 
 ```python
 from ai.client import get_llm_client

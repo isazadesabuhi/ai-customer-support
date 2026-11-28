@@ -50,11 +50,26 @@ See the [analysis contract](../architecture/sentiment-urgency.md) and [local com
 | Malformed object error | The response must be one complete JSON object. Check for invalid syntax, surrounding prose, Markdown fences, a scalar or array root, or an incomplete output budget. |
 | Duplicate field | Each object can use a key once, including nested fields. Compare the expected field names against a fictional test case. |
 | Unsupported enum | Check the exact lowercase label against the service's domain enum. Aliases and capitalization variants are rejected. |
-| Missing or unexpected fields | Compare the response to the service contract. Both implemented services require an exact set of keys. |
-| Excessive response size or nesting | The parser caps responses at 16,384 characters and 32 container levels. Both service schemas expect flat objects and surface limit failures as malformed output. |
+| Missing or unexpected fields | Compare the response to the service contract. Each service requires an exact set of keys. |
+| Excessive response size or nesting | The parser caps responses at 16,384 characters and 32 container levels. Keep the response within the selected service's field and length limits. |
 | Invalid explanation | Use a nonblank printable string of up to 300 characters. Embedded line breaks, tabs, and controls are invalid. |
 
 Use fictional fixtures to reproduce an error. Keep customer text, credentials, and full model output out of logs and shared reports. See the [validation architecture](../architecture/structured-output-validation.md).
+
+## Draft generation
+
+| Symptom | What to check |
+| --- | --- |
+| Missing API key or model | Offline validation can run immediately. For a live request, load the [optional LLM settings](setup.md#configure-the-optional-llm-client) in the backend shell. |
+| Unsupported language or tone | Use `en` or `fr`, and `professional`, `friendly`, or `empathetic`. |
+| Invalid context | Omit it when facts are unavailable. If supplied, use nonblank verified facts within 4,000 characters. |
+| Missing draft text or invalid JSON | Check that the response is one JSON object with all three draft fields. The draft must be nonblank printable text on a single line, without markup. |
+| Contradictory information fields | Set `needs_information` to a JSON Boolean. When it is true, the array must list at least one distinct needed detail. When false, the array must be empty. |
+| Timeout, rate limit, or unexpected provider response | Check the configured model and the provider error category. The command uses the provider's bounded retries. Invalid response content fails without a repair request. |
+
+Reproduce output failures with fictional fixtures. Check the [draft schema and limits](../architecture/draft-generation.md#output) and [local command](setup.md#exercise-draft-generation).
+
+## Local tooling
 
 | Symptom | Action |
 | --- | --- |

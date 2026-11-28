@@ -1,10 +1,10 @@
 # Structured AI output validation
 
-The `ai.structured_output` package validates text returned by the LLM. It gives classification and sentiment/urgency one place to enforce the rules they share. Each service still defines its own fields, enum choices, result type, and public errors.
+The `ai.structured_output` package validates text returned by the LLM. Classification, sentiment and urgency analysis, and draft generation use it for their common rules. Each service defines its own fields, result type, and public errors.
 
 ```mermaid
 flowchart TD
-    Service["Classifier or sentiment and urgency analyzer"] --> Client["Existing LLMClient"]
+    Service["Classification, analysis, or draft generation"] --> Client["Existing LLMClient"]
     Client --> Text["Normalized response text and metadata"]
     Text --> Parser["Shared bounded JSON object parser"]
     Parser --> Schema["Service fields and choices checked by shared helpers"]
@@ -17,15 +17,17 @@ flowchart TD
 
 `parse_json_object()` decodes one JSON object using Python's standard `json` library. The decoder rejects syntax errors, multiple documents, wrappers such as prose or Markdown fences, and non-object roots. An `object_pairs_hook` examines keys before conversion to a dictionary. It rejects repeated keys in every object, including nested objects and keys written with equivalent Unicode escapes. This prevents one value from silently overriding another.
 
-The parser rejects `NaN`, `Infinity`, `-Infinity`, and decimal exponents that would decode to non-finite floats. A response can contain at most **16,384 characters**, including whitespace, and **32 levels of object or array nesting**, counting the root as level one. Size is checked before decoding. Depth is checked by walking the decoded containers, and decoder recursion failures are converted to the same nesting error. These fixed limits leave room for both current response contracts, including explanations represented with JSON Unicode escapes.
+The parser rejects `NaN`, `Infinity`, `-Infinity`, and decimal exponents that would decode to non-finite floats. A response can contain at most **16,384 characters**, including whitespace and JSON escapes, and **32 levels of object or array nesting**, counting the root as level one. Size is checked before decoding. Depth is checked by walking the decoded containers, and decoder recursion failures are converted to the same nesting error.
 
 ## Checking a service contract
 
 - `require_fields()` checks required and allowed keys. Required keys are the exact permitted set by default. A caller can allow additional optional keys explicitly. It reports counts of missing and unexpected keys without echoing the keys from model output.
 - `validate_enum()` requires an exact, case-sensitive string choice. It accepts a collection of strings or existing Django `TextChoices`. The service decides which choices apply and constructs the typed enum member.
-- `validate_text_field()` requires nonblank text, measures length in characters, and rejects nonprintable characters such as newlines, tabs, and escape characters. Valid text keeps its original Unicode and spacing. Both services set a 300-character limit for each explanation.
+- `validate_text_field()` requires nonblank text, measures length in characters, and rejects nonprintable characters such as newlines, tabs, and escape characters. Valid text keeps its original Unicode and spacing. Classification and analysis limit explanations to 300 characters.
 
 Classification still requests `category` and `explanation`. The sentiment and urgency analyzer still requests its two labels and two explanations. The shared package operates on parsed values and code-owned field definitions. The prompt remains responsible for semantic rules such as primary intent and independent urgency.
+
+Draft generation requires exactly `draft_text`, `needs_information`, and `information_needed`. It reuses the JSON, exact field-set, and printable text validators. The draft schema owns the Boolean and array checks, duplicate information labels, plain-text restrictions, and the rule that the Boolean matches the presence of items. It translates shared validation errors into `InvalidDraftGenerationOutput`. See the [draft generation contract](draft-generation.md#output).
 
 ## Errors and compatibility
 

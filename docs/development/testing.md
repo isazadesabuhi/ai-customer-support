@@ -83,4 +83,16 @@ From `backend/` with the virtual environment active, run the shared parser, fiel
 
 Parser cases exercise JSON syntax, non-finite numbers, nested duplicate keys, size and depth boundaries, and safe error messages. Field cases cover exact shapes, code-owned choices, Unicode, and output text limits. Compatibility cases inject the existing fake client into both services and check public results, metadata, prompt versions, one logical call, and error translation without leaking customer text or synthetic credentials. Run `python -m pytest ai/tests` for the full set of service and LLM regressions. See the [structured-output architecture](../architecture/structured-output-validation.md).
 
+## Draft generation tests
+
+From `backend/` with the virtual environment active, run the draft-specific tests.
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest ai/tests -k draft_generation
+```
+
+Input cases cover Unicode, limits, optional facts, languages, and tones. Prompt cases check which facts and settings reach the user-role JSON and that instruction-like customer or context text stays outside the developer message. Parsing cases exercise exact fields, printable text, Boolean and array types, duplicates, and missing-information consistency. The fake client records the single logical request and supplies predictable successes and failures. Tests run with no database access and use the shared test fixture that blocks real provider HTTP requests.
+
+Command tests exercise offline validation and the live path with a fake. Mocked examples verify request construction and result handling. Live language, tone, factual accuracy, and resistance to prompt injection require separate evaluation. Manual live verification is opt-in and potentially billable. See the [local command](setup.md#exercise-draft-generation).
+
 Add Playwright for end-to-end flows once the frontend and API communicate.

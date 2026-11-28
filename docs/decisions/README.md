@@ -117,3 +117,12 @@ Use these fields for future records.
 - **Alternatives Considered** A general schema framework, automatic correction, and provider-specific schema enforcement. The current object contracts need a small provider-independent boundary. Automatic correction can hide bad outputs and require additional model calls.
 - **Consequences** Duplicate keys fail before a later value can overwrite an earlier one. Invalid results remain visible, and both services can evolve their domain rules independently. Existing fake clients and provider adapters still use the same interface. See the [structured-output architecture](../architecture/structured-output-validation.md).
 - **Date** 2026-11-28
+
+## ADR-013 · Generate structured drafts for human review
+
+- **Status** Accepted
+- **Context** Support agents need suggested replies to a single message. The application may have no verified order, policy, or account information for that message.
+- **Decision** Add a standalone generator that accepts controlled language and tone settings and explicitly supplied facts. Keep the fixed, versioned policy in the developer role and encode the facts and customer text as data in the user role. Ask for clarification or suggest a human check when evidence is missing. Validate the exact JSON schema and the consistency of missing-information fields before returning an in-memory result with mandatory review.
+- **Alternatives Considered** Free-form output, unrestricted style instructions, automatic policy retrieval, persisting every generated draft, and additional model-based evaluation in the same request.
+- **Consequences** Callers can test drafting independently and reviewers decide whether a reply is fit for delivery. This generation step has no persistence or delivery integration. The initial English and French settings and three tones keep the supported contract small. TASK-012 will add explicit safety and quality evaluation. See the [draft generation architecture](../architecture/draft-generation.md).
+- **Date** 2026-11-28

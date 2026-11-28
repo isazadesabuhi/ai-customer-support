@@ -2,19 +2,35 @@
 
 ## Overview
 
-- Overall progress is 7 of 40 tasks completed.
+- Overall progress is 9 of 40 tasks completed.
 - Current phase is Phase 2 — LLM Fundamentals.
-- Latest completed task is TASK-009 — Implement Customer Sentiment and Urgency Analysis.
-- TASK-010 implementation is in place. PostgreSQL verification is pending.
+- Latest completed task is TASK-011 — AI Draft Response Generation.
 
 ## Task activity
 
 | Category | Tasks |
 | --- | --- |
-| Completed | TASK-003 through TASK-009 |
+| Completed | TASK-003 through TASK-011 |
 | In progress | None |
-| Partially completed | TASK-001, TASK-002, and TASK-010 |
+| Partially completed | TASK-001 and TASK-002 |
 | Blocked | TASK-002 Docker health and persistence verification, TASK-001 Node.js 24 verification and fresh registry audit |
+
+## TASK-011 verification
+
+`CustomerResponseDraftGenerator` uses `draft-generation-v1`, controlled language and tone options, and optional caller-verified facts to request one structured draft through `LLMClient`. The shared validator and draft schema check exact JSON fields and missing-information consistency. The result stays in memory and always requires human review. See the [draft generation architecture](../architecture/draft-generation.md).
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Django, database, and migrations | `python manage.py check`, `python manage.py check_database`, `python manage.py makemigrations --check --dry-run` | Passed with PostgreSQL on loopback port 5433. No migration changes detected. |
+| Offline draft command | `python manage.py generate_draft --text "Where is my order?" --language fr --tone friendly` | Passed with provider credentials unset. Zero model requests. |
+| Draft generation tests | `python -m pytest ai/tests -k draft_generation` | 109 passed, 371 deselected. |
+| All AI tests | `python -m pytest ai/tests` | 480 passed. |
+| Database-free suite | `python -m pytest` | 575 passed, 267 skipped by design. |
+| PostgreSQL regression | `python -m pytest -m postgres --ds=config.postgres_test_settings` | 267 passed, 575 deselected. Verified isolated database creation and teardown. |
+| Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
+| Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1, including 1 Vitest test. |
+
+Verified on 2026-11-28. Docker control commands were denied in this session. The running database accepted the configured application role and completed the isolated test run. Live provider calls were not authorized. Factual accuracy, adherence to language and tone, and resistance to prompt injection remain evaluation work.
 
 ## TASK-010 verification
 
@@ -32,7 +48,7 @@ Classification and sentiment/urgency now use shared bounded JSON parsing, field-
 | Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
 | Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1, including 1 Vitest test. |
 
-Verified on 2026-11-28. The remaining completion gate is a successful PostgreSQL regression run. Automated coverage used mocks and incurred no provider calls. The decoder now rejects non-finite numbers, responses over 16,384 characters, and nesting beyond 32 container levels.
+The table records initial verification on 2026-11-28. The developer reported that PostgreSQL verification subsequently passed. The TASK-011 baseline independently confirmed the result on port 5433 with 267 passed and 466 deselected, and verified test database teardown. This closes the TASK-010 verification gate. Automated coverage used mocks and incurred no provider calls. The decoder rejects non-finite numbers, responses over 16,384 characters, and nesting beyond 32 container levels.
 
 ## TASK-009 verification
 
@@ -216,4 +232,4 @@ Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adop
 
 ## Next planned task
 
-After TASK-010 verification, TASK-011 — AI Draft Response Generation will reuse the LLM client, versioned prompts, structured-output validation, and existing support models where appropriate. See the [canonical roadmap](roadmap.md).
+TASK-012 — AI Response Safety and Quality Checks will evaluate draft replies for unsupported claims, inappropriate requests for sensitive information, and policy violations. See the [canonical roadmap](roadmap.md).

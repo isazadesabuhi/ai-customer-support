@@ -17,6 +17,7 @@ flowchart TD
     Classify["Opt-in classification management command"]
     Analyzer["Sentiment and urgency analyzer"]
     Analyze["Opt-in analysis management command"]
+    Validation["Shared structured-output validation"]
     LLM["LLM client and OpenAI adapter"]
     Check["Opt-in LLM management command"]
     Provider["OpenAI Responses API"]
@@ -31,12 +32,14 @@ flowchart TD
     AI -.-> LLM
     Classify --> Classifier
     Classifier --> LLM
+    Classifier --> Validation
     Analyze --> Analyzer
     Analyzer --> LLM
+    Analyzer --> Validation
     Check --> LLM
     LLM --> Provider
 ```
 
 Keeping the two applications in one Git repository lets a future change to an API contract include the server, client, tests, and documentation in one review. See the [initial architecture decisions](../decisions/README.md).
 
-The classifier and the sentiment and urgency analyzer use the same LLM client and have independent management commands. See the [LLM integration architecture](llm-integration.md), [classification architecture](message-classification.md), and [sentiment and urgency architecture](sentiment-urgency.md).
+The classifier and the sentiment and urgency analyzer use the same LLM client and validation layer and have independent management commands. See the [LLM integration architecture](llm-integration.md), [structured-output validation](structured-output-validation.md), [classification architecture](message-classification.md), and [sentiment and urgency architecture](sentiment-urgency.md).

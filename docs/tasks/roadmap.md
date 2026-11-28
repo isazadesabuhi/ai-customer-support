@@ -21,8 +21,8 @@ Allowed statuses are Not Started, In Progress, Completed, Partially Completed, a
 | --- | --- | --- |
 | TASK-007 | Integrate the LLM API. | Completed |
 | TASK-008 | Implement customer message classification. | Completed |
-| TASK-009 | Implement sentiment and urgency detection. | Partially Completed |
-| TASK-010 | Add structured output validation. | Not Started |
+| TASK-009 | Implement sentiment and urgency detection. | Completed |
+| TASK-010 | Add structured output validation. | Partially Completed |
 | TASK-011 | Implement AI response generation. | Not Started |
 | TASK-012 | Implement AI response checking. | Not Started |
 

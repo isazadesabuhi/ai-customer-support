@@ -10,7 +10,7 @@ The frontend defines a foundation landing page. The backend serves a role-protec
 | --- | --- | --- |
 | Frontend | Next.js App Router, React, TypeScript, Tailwind CSS, ESLint, Prettier, Vitest, React Testing Library | Agent inbox, draft review, Playwright |
 | Backend | Python, Django, Django REST Framework, session authentication, support roles, conversation and message APIs, PostgreSQL, fictional sample data, Ruff, Pytest, pytest-django | Background processing |
-| AI | Synchronous OpenAI text client, message classification, sentiment and urgency analysis, mocked tests | Drafting, structured output validation, orchestration, evaluations |
+| AI | Synchronous OpenAI text client, message classification, sentiment and urgency analysis, shared output validation, mocked tests | Drafting, orchestration, evaluations |
 
 ## Repository
 
@@ -32,6 +32,8 @@ The backend can validate the optional OpenAI configuration locally and has an op
 Use the [classification command](docs/development/setup.md#exercise-message-classification) to validate a fictional message locally or explicitly opt into a live request.
 
 The [sentiment and urgency command](docs/development/setup.md#exercise-sentiment-and-urgency-analysis) follows the same offline-first workflow.
+
+Both services apply the [shared structured-output rules](docs/architecture/structured-output-validation.md) before returning typed results.
 
 ## Roadmap and documentation
 

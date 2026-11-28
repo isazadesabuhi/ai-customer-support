@@ -73,4 +73,14 @@ The parser cases cover all nine sentiment and urgency combinations, exact keys a
 
 The offline command checks input without constructing a provider client. Automated tests also exercise the live command path with a fake. Any manual live check requires explicit opt-in and may incur charges. Fake tests establish the application contract. Live accuracy and injection resistance require separate evaluation. See the [local command](setup.md#exercise-sentiment-and-urgency-analysis).
 
+## Structured-output validation tests
+
+From `backend/` with the virtual environment active, run the shared parser, field helper, and compatibility tests.
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest ai/tests -k structured
+```
+
+Parser cases exercise JSON syntax, non-finite numbers, nested duplicate keys, size and depth boundaries, and safe error messages. Field cases cover exact shapes, code-owned choices, Unicode, and output text limits. Compatibility cases inject the existing fake client into both services and check public results, metadata, prompt versions, one logical call, and error translation without leaking customer text or synthetic credentials. Run `python -m pytest ai/tests` for the full set of service and LLM regressions. See the [structured-output architecture](../architecture/structured-output-validation.md).
+
 Add Playwright for end-to-end flows once the frontend and API communicate.

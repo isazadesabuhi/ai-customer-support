@@ -55,7 +55,7 @@ Keep a published version stable. Introduce a new version for material changes to
 }
 ```
 
-The parser requires a single JSON object with exactly those four keys. It rejects malformed JSON, duplicate keys, extra fields, unsupported enum values, and blank or nonprintable explanations. Each explanation has a 300-character limit. `SentimentUrgencyResult` carries the validated attributes, prompt version, and provider metadata available from `LLMResponse`, including model, usage, and request ID. Missing metadata remains `None`. The schema contains no confidence estimate.
+`SentimentUrgencyAnalyzer.analyze(message)` uses the shared JSON parser and validators. The service schema still requires exactly those four keys, the domain enum values, and two nonblank printable explanations of at most 300 characters each. `SentimentUrgencyResult` carries the validated attributes, `sentiment-urgency-v1` prompt version, and available model, usage, and request ID metadata. Missing metadata remains `None`. See the [shared validation rules](structured-output-validation.md).
 
 Invalid input raises `InvalidSentimentUrgencyInput`. Invalid response text raises `InvalidSentimentUrgencyOutput`. Errors omit raw message and response text. Normalized provider errors propagate as their existing `LLMError` subtypes. A malformed response remains an error. `neutral` and `normal` are valid model decisions when the message warrants them.
 

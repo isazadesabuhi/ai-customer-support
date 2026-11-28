@@ -4,7 +4,7 @@ The reusable OpenAI client, customer message classifier, and sentiment and urgen
 
 - **LLM integration** connects backend code to a provider API and handles request and service failures.
 - **Prompt engineering** shapes the instructions, context, and examples a model receives.
-- **Structured outputs** express a model response in a machine-readable schema so code can validate and use it.
+- **Structured outputs** use a machine-readable schema so the application can verify the response format and supported values. Both services use the [shared validation layer](../architecture/structured-output-validation.md).
 - **Response evaluation** measures how well model behavior meets defined expectations on representative cases.
 
 See [prompts](prompts.md), [classification](classification.md), and [evaluation](evaluation.md) for what each document will track.

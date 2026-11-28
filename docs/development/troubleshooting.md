@@ -43,6 +43,19 @@ See the [classification architecture](../architecture/message-classification.md)
 
 See the [analysis contract](../architecture/sentiment-urgency.md) and [local command](setup.md#exercise-sentiment-and-urgency-analysis).
 
+## Structured-output validation failures
+
+| Symptom | What to check |
+| --- | --- |
+| Malformed object error | The response must be one complete JSON object. Check for invalid syntax, surrounding prose, Markdown fences, a scalar or array root, or an incomplete output budget. |
+| Duplicate field | Each object can use a key once, including nested fields. Compare the expected field names against a fictional test case. |
+| Unsupported enum | Check the exact lowercase label against the service's domain enum. Aliases and capitalization variants are rejected. |
+| Missing or unexpected fields | Compare the response to the service contract. Both implemented services require an exact set of keys. |
+| Excessive response size or nesting | The parser caps responses at 16,384 characters and 32 container levels. Both service schemas expect flat objects and surface limit failures as malformed output. |
+| Invalid explanation | Use a nonblank printable string of up to 300 characters. Embedded line breaks, tabs, and controls are invalid. |
+
+Use fictional fixtures to reproduce an error. Keep customer text, credentials, and full model output out of logs and shared reports. See the [validation architecture](../architecture/structured-output-validation.md).
+
 | Symptom | Action |
 | --- | --- |
 | PowerShell blocks `Activate.ps1` | From `backend/`, run `.\.venv\Scripts\python.exe` directly for pip, Django, and Pytest. Use `.\.venv\Scripts\ruff.exe` for Ruff. |

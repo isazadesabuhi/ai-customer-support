@@ -18,7 +18,7 @@ flowchart LR
 
 ## Client contract
 
-`CustomerMessageClassifier` and `SentimentUrgencyAnalyzer` call the same protocol independently. Both send role-separated messages and validate normalized text in their own domain. The client owns provider timeouts, retries, and error normalization. See the [classification architecture](message-classification.md) and [sentiment and urgency architecture](sentiment-urgency.md).
+`CustomerMessageClassifier` and `SentimentUrgencyAnalyzer` call the same protocol independently. The client normalizes provider responses into text and metadata and owns timeouts, retries, and provider errors. The shared structured-output layer decodes that text and checks its shape and values. Each service supplies its own field names and domain choices, then constructs its typed result or raises its public output error. See the [shared validation architecture](structured-output-validation.md), [classification architecture](message-classification.md), and [sentiment and urgency architecture](sentiment-urgency.md).
 
 ```python
 from ai.client import get_llm_client

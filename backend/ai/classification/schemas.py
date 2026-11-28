@@ -1,12 +1,23 @@
-import json
 from dataclasses import dataclass, field
 
 from support.models import AnalysisCategory
 
 from ..schemas import LLMUsage
+from ..structured_output.errors import (
+    InvalidJSONOutput,
+    InvalidOutputField,
+    InvalidOutputShape,
+)
+from ..structured_output.json_parser import parse_json_object
+from ..structured_output.validators import (
+    require_fields,
+    validate_enum,
+    validate_text_field,
+)
 from .errors import InvalidClassificationOutput
 
 MAX_EXPLANATION_LENGTH = 300
+_OUTPUT_FIELDS = frozenset({"category", "explanation"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,51 +31,31 @@ class ClassificationResult:
     provider_request_id: str | None = None
 
 
-def _unique_fields(pairs: list[tuple[str, object]]) -> dict[str, object]:
-    fields: dict[str, object] = {}
-    for name, value in pairs:
-        if name in fields:
-            raise InvalidClassificationOutput(
-                "Classification JSON has a duplicate field."
-            )
-        fields[name] = value
-    return fields
-
-
 def parse_classification(text: str) -> tuple[AnalysisCategory, str]:
-    if not isinstance(text, str) or not text.strip():
-        raise InvalidClassificationOutput(
-            "Classification requires a nonblank JSON response."
-        )
-
     try:
-        payload = json.loads(text, object_pairs_hook=_unique_fields)
-    except (ValueError, RecursionError):
-        payload = None
-
-    if not isinstance(payload, dict):
-        raise InvalidClassificationOutput(
-            "Classification output must be a single JSON object."
+        payload = parse_json_object(text)
+        require_fields(payload, required=_OUTPUT_FIELDS)
+        category = validate_enum(
+            payload["category"], allowed=AnalysisCategory.values, field="category"
         )
-    if set(payload) != {"category", "explanation"}:
-        raise InvalidClassificationOutput(
-            "Classification requires exactly category and explanation fields."
+        explanation = validate_text_field(
+            payload["explanation"],
+            field="explanation",
+            max_length=MAX_EXPLANATION_LENGTH,
         )
-
-    category = payload["category"]
-    if not isinstance(category, str) or category not in AnalysisCategory.values:
-        raise InvalidClassificationOutput(
+        return AnalysisCategory(category), explanation
+    except InvalidJSONOutput as error:
+        message = {
+            "nonblank": "Classification requires a nonblank JSON response.",
+            "duplicate": "Classification JSON has a duplicate field.",
+        }.get(error.code, "Classification output must be a single JSON object.")
+    except InvalidOutputShape:
+        message = "Classification requires exactly category and explanation fields."
+    except InvalidOutputField as error:
+        message = (
             "Classification returned an unsupported category."
+            if error.field == "category"
+            else f"Classification requires a nonblank, printable explanation of at most {MAX_EXPLANATION_LENGTH} characters."
         )
 
-    explanation = payload["explanation"]
-    if (
-        not isinstance(explanation, str)
-        or not explanation.strip()
-        or not explanation.isprintable()
-        or len(explanation) > MAX_EXPLANATION_LENGTH
-    ):
-        raise InvalidClassificationOutput(
-            f"Classification requires a nonblank, printable explanation of at most {MAX_EXPLANATION_LENGTH} characters."
-        )
-    return AnalysisCategory(category), explanation
+    raise InvalidClassificationOutput(message)

@@ -50,6 +50,8 @@ The `ai` package provides a typed synchronous client, an OpenAI Responses adapte
 
 `CustomerMessageClassifier` returns an intent category from the seven support categories. `SentimentUrgencyAnalyzer` returns independently judged sentiment and urgency for the same kind of single-message input. Both use the shared client, validate their own JSON output, and return typed results without involving HTTP or persistence. Their development commands default to offline validation. Drafting and orchestration remain scheduled work. See the [classification architecture](message-classification.md) and [sentiment and urgency architecture](sentiment-urgency.md).
 
+`ai.structured_output` centralizes bounded JSON parsing and shared field, enum, and explanation checks. Classification and sentiment/urgency supply their separate schemas and translate validation errors into their established public exceptions. See the [structured-output validation architecture](structured-output-validation.md).
+
 ## Migrations
 
 `makemigrations` generates versioned migration files from model changes. `migrate` applies existing migration operations and tracks them in the target database's `django_migrations` table. `showmigrations` displays that history. Review and version migration files because schema changes can lock tables or require compatible application deployments. The support app's initial migration adds its tables alongside the existing Django framework tables.

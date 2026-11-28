@@ -2,19 +2,37 @@
 
 ## Overview
 
-- Overall progress is 6 of 40 tasks completed.
+- Overall progress is 7 of 40 tasks completed.
 - Current phase is Phase 2 — LLM Fundamentals.
-- Latest completed task is TASK-008 — Implement Customer Message Classification.
-- TASK-009 implementation is in place. PostgreSQL verification is pending.
+- Latest completed task is TASK-009 — Implement Customer Sentiment and Urgency Analysis.
+- TASK-010 implementation is in place. PostgreSQL verification is pending.
 
 ## Task activity
 
 | Category | Tasks |
 | --- | --- |
-| Completed | TASK-003 through TASK-008 |
+| Completed | TASK-003 through TASK-009 |
 | In progress | None |
-| Partially completed | TASK-001, TASK-002, and TASK-009 |
+| Partially completed | TASK-001, TASK-002, and TASK-010 |
 | Blocked | TASK-002 Docker health and persistence verification, TASK-001 Node.js 24 verification and fresh registry audit |
+
+## TASK-010 verification
+
+Classification and sentiment/urgency now use shared bounded JSON parsing, field-set checks, exact enum validation, printable text checks, and sanitized internal errors. Each service retains its prompt, result schema, and public errors. See the [structured-output architecture](../architecture/structured-output-validation.md).
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Django system check | `python manage.py check` | Passed. |
+| Database connectivity | `python manage.py check_database` | Failed. Docker's engine pipe was unavailable after startup attempts and PostgreSQL on port 5433 did not respond. |
+| Model and migration synchronization | `python manage.py makemigrations --check --dry-run` | No changes detected with development and test settings. The development database history check timed out. |
+| Shared checks and service compatibility | `python -m pytest ai/tests -k structured` | 80 passed, 291 deselected. |
+| All AI regressions | `python -m pytest ai/tests` | 371 passed, including 91 classification cases and 113 sentiment/urgency cases. |
+| Database-free regression | `python -m pytest` | 466 passed, 267 PostgreSQL cases skipped as expected. |
+| PostgreSQL regression | `python -m pytest -m postgres --ds=config.postgres_test_settings` | Execution blocked by connectivity. Collection-only mode selected 267 tests and deselected 466. |
+| Backend quality and dependencies | `ruff check .`, `ruff format --check .`, `python -m pip check` | Passed. |
+| Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1, including 1 Vitest test. |
+
+Verified on 2026-11-28. The remaining completion gate is a successful PostgreSQL regression run. Automated coverage used mocks and incurred no provider calls. The decoder now rejects non-finite numbers, responses over 16,384 characters, and nesting beyond 32 container levels.
 
 ## TASK-009 verification
 
@@ -33,7 +51,7 @@
 | Frontend regression | `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test:run`, `npm.cmd run build` | Passed on Node.js 25.2.1, including 1 Vitest test. |
 | Live analysis | `python manage.py analyze_sentiment --text "I need my replacement before tomorrow." --live` | Unverified. Billable request authorization was not provided. The command passed mocked tests. |
 
-Verified on 2026-11-26. The implementation and database-free checks are complete. TASK-009 completion requires a successful PostgreSQL regression run. Live accuracy and injection resistance remain evaluation work.
+The table records the initial verification on 2026-11-26. The developer subsequently reported 267 PostgreSQL tests passed after Docker was restored on port 5433, with one non-blocking pytest cache permission warning. They reported 386 database-free tests and 113 new sentiment/urgency tests passed, with no migration changes detected. That follow-up completes TASK-009. Live accuracy and injection resistance remain evaluation work.
 
 ## TASK-008 verification
 
@@ -198,4 +216,4 @@ Minimatch `11.0.1` is the first patched release. TypeScript ESLint `8.73.0` adop
 
 ## Next planned task
 
-After TASK-009 verification, TASK-010 — Structured AI Output Validation will build shared schema validation on the classification and sentiment/urgency services. See the [canonical roadmap](roadmap.md).
+After TASK-010 verification, TASK-011 — AI Draft Response Generation will reuse the LLM client, versioned prompts, structured-output validation, and existing support models where appropriate. See the [canonical roadmap](roadmap.md).

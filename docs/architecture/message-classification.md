@@ -44,7 +44,7 @@ Keep published prompt behavior stable for reproducible evaluation. Introduce a n
 }
 ```
 
-The parser accepts one JSON object containing exactly `category` and `explanation`. It rejects duplicate keys, missing or extra fields, unknown category keys, arrays, markdown fences, trailing prose, and multiple objects. The explanation must be a nonblank printable string of at most 300 characters. `ClassificationResult` includes the typed category, explanation, prompt version, and the provider's model, usage, and request ID when available. The contract requests a short issue description. Detailed reasoning and confidence scores are outside the schema.
+Classification uses the shared JSON parser and validators. Its service schema still requires exactly `category` and `explanation`, using the existing `AnalysisCategory` choices and a nonblank printable explanation of at most 300 characters. `ClassificationResult` still includes the typed category, explanation, `classification-v1` prompt version, and the provider's model, usage, and request ID when available. See the [shared validation rules](structured-output-validation.md).
 
 Invalid inputs raise `InvalidClassificationInput`. Invalid response text raises `InvalidClassificationOutput`. Both use messages that omit the customer text and raw response. Existing normalized `LLMError` subclasses propagate to callers. A valid `other` result describes an actual classification decision. Malformed responses remain errors and cause no repair request.
 

@@ -108,3 +108,12 @@ Use these fields for future records.
 - **Alternatives Considered** Two separate requests for tone and urgency, an inferred priority based on sentiment, schema repair requests, and combining these outputs with intent classification now.
 - **Consequences** One call avoids sending the same text twice and retains the existing provider retry limits. Independent fields can express polite deadlines and non-urgent frustration. Structured validity is checked locally, and model accuracy and injection resistance remain evaluation work. See the [sentiment and urgency architecture](../architecture/sentiment-urgency.md).
 - **Date** 2026-11-26
+
+## ADR-012 · Share structured-output checks across AI services
+
+- **Status** Accepted
+- **Context** Classification and sentiment/urgency duplicated JSON decoding, duplicate detection, exact field checks, enums, and explanation validation.
+- **Decision** Use the standard JSON decoder with hooks for duplicate keys and non-finite numbers, plus fixed size and depth limits. Reuse helpers for object shape, exact choices, and printable text. Keep each service's fields and business rules in its own schema. Translate shared failures into existing public errors to preserve caller contracts.
+- **Alternatives Considered** A general schema framework, automatic correction, and provider-specific schema enforcement. The current object contracts need a small provider-independent boundary. Automatic correction can hide bad outputs and require additional model calls.
+- **Consequences** Duplicate keys fail before a later value can overwrite an earlier one. Invalid results remain visible, and both services can evolve their domain rules independently. Existing fake clients and provider adapters still use the same interface. See the [structured-output architecture](../architecture/structured-output-validation.md).
+- **Date** 2026-11-28
